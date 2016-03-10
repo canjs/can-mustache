@@ -63,14 +63,15 @@
     "jquery": "~2.2.1"
   },
   "devDependencies": {
-    "documentjs": "^0.4.2",
-    "jshint": "^2.9.1",
+    "benchmark": "^2.1.0",
     "cssify": "^0.6.0",
+    "documentjs": "^0.4.2",
+    "donejs-cli": "^0.7.0",
+    "generator-donejs": "^0.7.0",
+    "jshint": "^2.9.1",
     "steal": "^0.14.0",
     "steal-qunit": "^0.1.1",
     "steal-tools": "^0.14.1",
-    "testee": "^0.2.4",
-    "generator-donejs": "^0.7.0",
-    "donejs-cli": "^0.7.0"
+    "testee": "^0.2.4"
   }
 }
