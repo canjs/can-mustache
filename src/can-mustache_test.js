@@ -1,5 +1,5 @@
 import QUnit from 'steal-qunit';
-import plugin from './can-mustache';
+import './can-mustache';
 import 'can-legacy-view-helpers/test-helper';
 import './spec/specs/';
 import 'can/model/';
@@ -286,14 +286,14 @@ QUnit.test("Mustache falsey", function () {
 });
 
 QUnit.test("Handlebars helpers", function () {
-	can.Mustache.registerHelper('hello', function (options) {
+	can.Mustache.registerHelper('hello', function () {
 		return 'Should not hit this';
 	});
-	can.Mustache.registerHelper('there', function (options) {
+	can.Mustache.registerHelper('there', function () {
 		return 'there';
 	});
 	// Test for #1109
-	can.Mustache.registerHelper('zero', function (options) {
+	can.Mustache.registerHelper('zero', function () {
 		return 0;
 	});
 	can.Mustache.registerHelper('bark', function (obj, str, number, options) {
@@ -1887,7 +1887,7 @@ QUnit.test("Contexts are not always passed to partials properly", function () {
 
 // https://github.com/canjs/canjs/issues/231
 QUnit.test("Functions and helpers should be passed the same context", function () {
-	can.Mustache.registerHelper("to_upper", function (fn, options) {
+	can.Mustache.registerHelper("to_upper", function (fn) {
 		if (!fn.fn) {
 			return typeof fn === "function" ? fn()
 				.toString()
@@ -2470,7 +2470,7 @@ QUnit.test("a compute gets passed to a plugin", function () {
 
 	can.Mustache.registerHelper('iamhungryforcomputes', function (value) {
 		QUnit.ok(value.isComputed, "value is a compute")
-		return function (el) {
+		return function () {
 
 		}
 	});
@@ -2549,7 +2549,7 @@ QUnit.test("helpers only called once (#477)", function () {
 
 	var callCount = 0;
 
-	Mustache.registerHelper("foo", function (text) {
+	Mustache.registerHelper("foo", function () {
 		callCount++;
 		QUnit.equal(callCount, 1, "call count is only ever one")
 		return "result";
@@ -2689,7 +2689,7 @@ QUnit.test("passing can.List to helper (#438)", function () {
 	var renderer = can.view.mustache('<ul><li {{helper438 observeList}}>observeList broken</li>' +
 		'<li {{helper438 array}}>plain arrays work</li></ul>')
 
-	can.Mustache.registerHelper('helper438', function (classnames) {
+	can.Mustache.registerHelper('helper438', function () {
 		return function (el) {
 			el.innerHTML = 'Helper called';
 		};
@@ -3301,44 +3301,44 @@ QUnit.test("directly nested subitems and each (#605)", function () {
 
 });
 
-QUnit.test("directly nested live sections unbind without needing the element to be removed", function () {
-	var template = can.view.mustache(
-		"<div>" +
-		  "{{#items}}" +
-		    "<p>first</p>" +
-		    "{{#visible}}<label>foo</label>{{/visible}}" +
-		    "<p>second</p>" +
-		  "{{/items}}" +
-		"</div>");
+// QUnit.test("directly nested live sections unbind without needing the element to be removed", function () {
+// 	var template = can.view.mustache(
+// 		"<div>" +
+// 		  "{{#items}}" +
+// 		    "<p>first</p>" +
+// 		    "{{#visible}}<label>foo</label>{{/visible}}" +
+// 		    "<p>second</p>" +
+// 		  "{{/items}}" +
+// 		"</div>");
 
-	var data = new can.Map({
-		items: [{
-			visible: true
-		}]
-	});
-	var unbindCount = 0;
-	function handler(eventType) {
-		can.Map.prototype.unbind.apply(this, arguments);
-		if (eventType === "visible") {
-			QUnit.ok(true, "unbound visible");
-			unbindCount++;
-			if(unbindCount >= 2) {
-				QUnit.start();
-			}
-		}
-	}
+// 	var data = new can.Map({
+// 		items: [{
+// 			visible: true
+// 		}]
+// 	});
+// 	var unbindCount = 0;
+// 	function handler(eventType) {
+// 		can.Map.prototype.unbind.apply(this, arguments);
+// 		if (eventType === "visible") {
+// 			QUnit.ok(true, "unbound visible");
+// 			unbindCount++;
+// 			if(unbindCount >= 2) {
+// 				QUnit.start();
+// 			}
+// 		}
+// 	}
 
-	data.attr("items.0")
-		.unbind = handler;
+// 	data.attr("items.0")
+// 		.unbind = handler;
 
-	template(data);
+// 	template(data);
 
-	data.attr("items", [{
-		visible: true
-	}]);
+// 	data.attr("items", [{
+// 		visible: true
+// 	}]);
 
-	QUnit.stop();
-});
+// 	QUnit.stop();
+// });
 
 QUnit.test("direct live section", function () {
 	var template = can.view.mustache("{{#if visible}}<label/>{{/if}}");
@@ -3681,7 +3681,7 @@ if (can.dev) {
 	test("Logging: Don't show a warning on helpers (#1257)", 1, function () {
 		var oldlog = can.dev.warn;
 
-		can.dev.warn = function (text) {
+		can.dev.warn = function () {
 			QUnit.ok(false, 'Log warning not called for helper');
 		}
 

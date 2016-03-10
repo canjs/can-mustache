@@ -87,7 +87,7 @@ var SCOPE = 'scope',
  * The Mustache templating engine.
  * @param {Object} options	Configuration options
  */
-var Mustache = function (options, helpers) {
+var Mustache = function (options/*, helpers*/) {
 	// Support calling Mustache without the constructor.
 	// This returns a function that renders the template.
 	if (!this || this.constructor !== Mustache) {
@@ -401,7 +401,7 @@ can.extend(Mustache.prototype, {
 			// 			<strong>{{name}}</strong>
 			{
 				name: /^>[\s]*\w*/,
-				fn: function (content, cmd) {
+				fn: function (content/*, cmd*/) {
 					// Get the template name and call back into the render method,
 					// passing the name and the current context.
 					var templateName = can.trim(content.replace(/^>\s?/, ''))
@@ -461,7 +461,7 @@ can.extend(Mustache.prototype, {
 			 */
 			{
 				name: /^\s*data\s/,
-				fn: function (content, cmd) {
+				fn: function (content/*, cmd*/) {
 					var attr = content.match(/["|'](.*)["|']/)[1];
 					// return a function which calls `can.data` on the element
 					// with the attribute name with the current context.
