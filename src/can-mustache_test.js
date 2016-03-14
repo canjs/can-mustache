@@ -1,13 +1,9 @@
-import QUnit from 'steal-qunit';
-import './can-mustache';
-import 'can-legacy-view-helpers/test-helper';
-import './spec/specs/';
-import 'can/model/';
-
-QUnit.module('can-mustache');
-
+"format cjs";
 /* jshint asi:true,multistr:true*/
 /*global Mustache*/
+var QUnit = require("steal-qunit");
+var can = require("./can-mustache");
+require("can-legacy-view-helpers/test-helper");
 
 QUnit.module("can-mustache, rendering", {
 	setup: function () {
@@ -60,7 +56,7 @@ var override = {
 can.each(window.MUSTACHE_SPECS, function(specData){
 	var spec = specData.name;
 	can.each(specData.data.tests, function (t) {
-		test('specs/' + spec + ' - ' + t.name + ': ' + t.desc, function () {
+		QUnit.test('specs/' + spec + ' - ' + t.name + ': ' + t.desc, function () {
 			// can uses &#34; to escape double quotes, mustache expects &quot;.
 			// can uses \n for new lines, mustache expects \r\n.
 			var expected = (override[spec] && override[spec][t.name]) || t.expected.replace(/&quot;/g, '&#34;')
@@ -157,7 +153,7 @@ QUnit.test("Model hookup", function () {
 
 /*
  // FIX THIS
- test('Helpers sections not returning values', function(){
+ QUnit.test('Helpers sections not returning values', function(){
  Mustache.registerHelper('filter', function(attr,options){
  return true;
  });
@@ -170,7 +166,7 @@ QUnit.test("Model hookup", function () {
  });
 
  // FIX THIS
- test('Helpers with obvservables in them', function(){
+ QUnit.test('Helpers with obvservables in them', function(){
  Mustache.registerHelper('filter', function(attr,options){
  return options.fn(attr === "poo");
  });
@@ -286,14 +282,14 @@ QUnit.test("Mustache falsey", function () {
 });
 
 QUnit.test("Handlebars helpers", function () {
-	can.Mustache.registerHelper('hello', function () {
+	can.Mustache.registerHelper('hello', function (/*options*/) {
 		return 'Should not hit this';
 	});
-	can.Mustache.registerHelper('there', function () {
+	can.Mustache.registerHelper('there', function (/*options*/) {
 		return 'there';
 	});
 	// Test for #1109
-	can.Mustache.registerHelper('zero', function () {
+	can.Mustache.registerHelper('zero', function (/*options*/) {
 		return 0;
 	});
 	can.Mustache.registerHelper('bark', function (obj, str, number, options) {
@@ -781,13 +777,13 @@ QUnit.test("unescapedContent", function () {
 
 /*
  not really applicable...but could update to work oince complete
- test("returning blocks", function(){
+ QUnit.test("returning blocks", function(){
  var somethingHelper = function(cb){
  return cb([1,2,3,4])
  }
 
  var res = can.view.
- render("//can/view/mustache/test_template.mustache",{
+ render("//can/src/test_template.mustache",{
  something: somethingHelper,
  items: ['a','b']
  });
@@ -798,11 +794,9 @@ QUnit.test("unescapedContent", function () {
 
 QUnit.test("easy hookup", function () {
 	var div = document.createElement('div');
-	var path = can.test.path("src/test/easyhookup.mustache");
-	var frag = can.view(path, {
+	div.appendChild(can.view(can.test.path("src/test/easyhookup.mustache"), {
 		text: "yes"
-	});
-	div.appendChild(frag);
+	}))
 
 	QUnit.ok(div.getElementsByTagName('div')[0].className.indexOf("yes") !== -1, "has yes")
 });
@@ -824,11 +818,12 @@ QUnit.test('multiple function hookups in a tag', function () {
 	QUnit.equal(can.data(can.$(span), 'baz'), 'qux', "second hookup");
 	// clear hookups b/c we are using .render;
 	can.view.hookups = {};
-});
+
+})
 
 /*
  needs andy's helper logic
- test("helpers", function() {
+ QUnit.test("helpers", function() {
  can.Mustache.Helpers.prototype.simpleHelper = function()
  {
  return 'Simple';
@@ -1224,7 +1219,7 @@ QUnit.test('html comments', function () {
 	
 	// clear hookups b/c we are using .render;
 	can.view.hookups = {};
-});
+})
 
 QUnit.test("hookup and live binding", function () {
 
@@ -1755,33 +1750,6 @@ QUnit.test("computes are supported in default helpers", function () {
 
 });
 
-QUnit.test("Rendering models in tables produces different results than an equivalent observe (#202)", 2, function () {
-	var renderer = can.view.mustache('<table>{{#stuff}}<tbody>{{#rows}}<tr></tr>{{/rows}}</tbody>{{/stuff}}</table>');
-	var div = document.createElement('div');
-	var dom = renderer({
-		stuff: new can.Map({
-			rows: [{
-				name: 'first'
-			}]
-		})
-	});
-	div.appendChild(dom);
-	var elements = div.getElementsByTagName('tbody');
-	QUnit.equal(elements.length, 1, 'Only one <tbody> rendered');
-
-	div = document.createElement('div');
-	dom = renderer({
-		stuff: new can.Model({
-			rows: [{
-				name: 'first'
-			}]
-		})
-	});
-	div.appendChild(dom);
-	elements = div.getElementsByTagName('tbody');
-	QUnit.equal(elements.length, 1, 'Only one <tbody> rendered');
-})
-
 //Issue 233
 QUnit.test("multiple tbodies in table hookup", function () {
 	var text = "<table>" +
@@ -1887,7 +1855,7 @@ QUnit.test("Contexts are not always passed to partials properly", function () {
 
 // https://github.com/canjs/canjs/issues/231
 QUnit.test("Functions and helpers should be passed the same context", function () {
-	can.Mustache.registerHelper("to_upper", function (fn) {
+	can.Mustache.registerHelper("to_upper", function (fn/*, options*/) {
 		if (!fn.fn) {
 			return typeof fn === "function" ? fn()
 				.toString()
@@ -2351,9 +2319,9 @@ QUnit.test("Helpers always have priority (#258)", function () {
 });
 
 if (typeof steal !== 'undefined') {
-	test("avoid global helpers", function () {
+	QUnit.test("avoid global helpers", function () {
 		QUnit.stop();
-		System["import"]('src/test/noglobals.mustache!').then(function (noglobals) {
+		steal('src/test/noglobals.mustache!', function (noglobals) {
 			var div = document.createElement('div'),
 				div2 = document.createElement('div');
 			var person = new can.Map({
@@ -2470,7 +2438,7 @@ QUnit.test("a compute gets passed to a plugin", function () {
 
 	can.Mustache.registerHelper('iamhungryforcomputes', function (value) {
 		QUnit.ok(value.isComputed, "value is a compute")
-		return function () {
+		return function (/*el*/) {
 
 		}
 	});
@@ -2549,7 +2517,7 @@ QUnit.test("helpers only called once (#477)", function () {
 
 	var callCount = 0;
 
-	Mustache.registerHelper("foo", function () {
+	Mustache.registerHelper("foo", function (/*text*/) {
 		callCount++;
 		QUnit.equal(callCount, 1, "call count is only ever one")
 		return "result";
@@ -2689,7 +2657,7 @@ QUnit.test("passing can.List to helper (#438)", function () {
 	var renderer = can.view.mustache('<ul><li {{helper438 observeList}}>observeList broken</li>' +
 		'<li {{helper438 array}}>plain arrays work</li></ul>')
 
-	can.Mustache.registerHelper('helper438', function () {
+	can.Mustache.registerHelper('helper438', function (/*classnames*/) {
 		return function (el) {
 			el.innerHTML = 'Helper called';
 		};
@@ -3301,44 +3269,44 @@ QUnit.test("directly nested subitems and each (#605)", function () {
 
 });
 
-// QUnit.test("directly nested live sections unbind without needing the element to be removed", function () {
-// 	var template = can.view.mustache(
-// 		"<div>" +
-// 		  "{{#items}}" +
-// 		    "<p>first</p>" +
-// 		    "{{#visible}}<label>foo</label>{{/visible}}" +
-// 		    "<p>second</p>" +
-// 		  "{{/items}}" +
-// 		"</div>");
+QUnit.test("directly nested live sections unbind without needing the element to be removed", function () {
+	var template = can.view.mustache(
+		"<div>" +
+		"{{#items}}" +
+		"<p>first</p>" +
+		"{{#visible}}<label>foo</label>{{/visible}}" +
+		"<p>second</p>" +
+		"{{/items}}" +
+		"</div>");
 
-// 	var data = new can.Map({
-// 		items: [{
-// 			visible: true
-// 		}]
-// 	});
-// 	var unbindCount = 0;
-// 	function handler(eventType) {
-// 		can.Map.prototype.unbind.apply(this, arguments);
-// 		if (eventType === "visible") {
-// 			QUnit.ok(true, "unbound visible");
-// 			unbindCount++;
-// 			if(unbindCount >= 2) {
-// 				QUnit.start();
-// 			}
-// 		}
-// 	}
+	var data = new can.Map({
+		items: [{
+			visible: true
+		}]
+	});
+	var unbindCount = 0;
+	function handler(eventType) {
+		can.Map.prototype.unbind.apply(this, arguments);
+		if (eventType === "visible") {
+			QUnit.ok(true, "unbound visible");
+			unbindCount++;
+			if(unbindCount >= 1) {
+				QUnit.start();
+			}
+		}
+	}
 
-// 	data.attr("items.0")
-// 		.unbind = handler;
+	data.attr("items.0")
+		.unbind = handler;
 
-// 	template(data);
+	template(data);
 
-// 	data.attr("items", [{
-// 		visible: true
-// 	}]);
+	data.attr("items", [{
+		visible: true
+	}]);
 
-// 	QUnit.stop();
-// });
+	QUnit.stop();
+});
 
 QUnit.test("direct live section", function () {
 	var template = can.view.mustache("{{#if visible}}<label/>{{/if}}");
@@ -3631,7 +3599,7 @@ QUnit.test("@index in partials loaded from script templates", function () {
 
 //!steal-remove-start
 if (can.dev) {
-	test("Logging: Custom tag does not have a registered handler", function () {
+	QUnit.test("Logging: Custom tag does not have a registered handler", function () {
 		if (window.html5) {
 			window.html5.elements += ' my-custom';
 			window.html5.shivDocument();
@@ -3648,9 +3616,9 @@ if (can.dev) {
 		can.dev.warn = oldlog;
 	});
 
-	test("Logging: Helper not found in mustache template(#726)", function () {
+	QUnit.test("Logging: Helper not found in mustache template(#726)", function () {
 		var oldlog = can.dev.warn,
-				message = 'can/view/mustache/mustache.js: Unable to find helper "helpme".';
+				message = 'can-mustache.js: Unable to find helper "helpme".';
 
 		can.dev.warn = function (text) {
 			QUnit.equal(text, message, 'Got expected message logged.');
@@ -3663,9 +3631,9 @@ if (can.dev) {
 		can.dev.warn = oldlog;
 	});
 
-	test("Logging: Variable not found in mustache template (#720)", function () {
+	QUnit.test("Logging: Variable not found in mustache template (#720)", function () {
 		var oldlog = can.dev.warn,
-				message = 'can/view/mustache/mustache.js: Unable to find key "user.name".';
+				message = 'can-mustache.js: Unable to find key "user.name".';
 
 		can.dev.warn = function (text) {
 			QUnit.equal(text, message, 'Got expected message logged.');
@@ -3678,10 +3646,10 @@ if (can.dev) {
 		can.dev.warn = oldlog;
 	});
 
-	test("Logging: Don't show a warning on helpers (#1257)", 1, function () {
+	QUnit.test("Logging: Don't show a warning on helpers (#1257)", 1, function () {
 		var oldlog = can.dev.warn;
 
-		can.dev.warn = function () {
+		can.dev.warn = function (/*text*/) {
 			QUnit.ok(false, 'Log warning not called for helper');
 		}
 
@@ -3927,7 +3895,7 @@ QUnit.test("{{else}} with {{#unless}} (#988)", function(){
 // of creating a string from a document fragment.
 try {
 	if(can.$('<col>').length) {
-		test("<col> inside <table> renders correctly (#1013)", 1, function () {
+		QUnit.test("<col> inside <table> renders correctly (#1013)", 1, function () {
 			var template = '<table><colgroup>{{#columns}}<col class="{{class}}" />{{/columns}}</colgroup><tbody></tbody></table>';
 			var frag = can.mustache(template)({
 				columns: new can.List([
@@ -3975,7 +3943,7 @@ QUnit.test("Passing Partial set in options (#1388 and #1389).", function () {
 
 
 if(Object.keys) {
-	test('Mustache memory leak (#1393)', function() {
+	QUnit.test('Mustache memory leak (#1393)', function() {
 		for(var prop in can.view.nodeLists.nodeMap) {
 			delete can.view.nodeLists.nodeMap[prop];
 		}
@@ -4100,3 +4068,5 @@ QUnit.test('registerSimpleHelper', 3, function() {
 	}));
 	QUnit.equal(frag.childNodes[0].innerHTML, 'Result: 6');
 });
+
+module.exports = QUnit;

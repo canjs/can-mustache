@@ -1,9 +1,9 @@
-import can from "can";
-import "can-legacy-view-helpers";
-import "can/compute/";
-import "can/view/";
-import "can/view/scope/";
-import "can/view/bindings/";
+var can = require('can/util/');
+require('can/view/');
+require('can/view/scope/');
+require('can/view/bindings/');
+require('can/compute/');
+require('can-legacy-view-helpers');
 
 // # mustache.js
 // `can.Mustache`: The Mustache templating engine.
@@ -90,7 +90,7 @@ var SCOPE = 'scope',
 var Mustache = function (options/*, helpers*/) {
 	// Support calling Mustache without the constructor.
 	// This returns a function that renders the template.
-	if (!this || this.constructor !== Mustache) {
+	if (this.constructor !== Mustache) {
 		var mustache = new Mustache(options);
 		return function (data, options) {
 			return mustache.render(data, options);
@@ -1551,7 +1551,7 @@ Mustache.get = function (key, scopeAndOptions, isHelper, isArgument, isLookup) {
 		}
 
 		//!steal-remove-start
-		can.dev.warn('can/view/mustache/mustache.js: Unable to find helper "' + key + '".');
+		can.dev.warn('can-mustache.js: Unable to find helper "' + key + '".');
 		//!steal-remove-end
 	}
 
@@ -1571,7 +1571,7 @@ Mustache.get = function (key, scopeAndOptions, isHelper, isArgument, isLookup) {
 	  
 	//!steal-remove-start
 	if (initialValue === undefined && !isHelper && !helperObj) {
-		can.dev.warn('can/view/mustache/mustache.js: Unable to find key "' + key + '".');
+		can.dev.warn('can-mustache.js: Unable to find key "' + key + '".');
 	}
 	//!steal-remove-end
 
@@ -2236,7 +2236,7 @@ can.each({
 			options = offset;
 			offset = 0;
 		}
-		var index = options.scope.attr("@index");
+		var index = options.scope.read("@index",{isArgument: true}).value;
 		return ""+((can.isFunction(index) ? index() : index) + offset);
 	}
 	/**
@@ -2306,5 +2306,4 @@ can.view.register({
 
 can.mustache.registerHelper = can.proxy(can.Mustache.registerHelper, can.Mustache);
 can.mustache.safeString = can.Mustache.safeString;
-
-export default can;
+module.exports = can;

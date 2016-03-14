@@ -1,1 +1,1 @@
-import '../can-mustache_test';
+require('../can-mustache_test');
