@@ -1,6 +1,6 @@
 {
   "name": "can-mustache",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "legacy mustache layer for canjs",
   "homepage": "https://canjs.com/2.3/docs/can.mustache.html",
   "author": {
