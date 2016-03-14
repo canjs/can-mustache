@@ -1,8 +1,6 @@
 # can-mustache
 
-[![Build Status](https://travis-ci.org/bitovi/can-mustache.png?branch=master)](https://travis-ci.org/bitovi/can-mustache)
-
-**DO NOT USE - NOT PRODUCTION READY**
+[![Build Status](https://travis-ci.org/canjs/can-mustache.png?branch=master)](https://travis-ci.org/bitovi/can-mustache)
 
 Legacy Mustache view layer for CanJS. While this code has been heavily tested and is considered stable, it is no longer supported or maintained. CanJS now ships with Stache which is much more feature rich and much faster - you should use it instead!
 
