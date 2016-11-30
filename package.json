@@ -23,16 +23,6 @@
     "develop": "can-serve --static --develop --port 8080"
   },
   "main": "dist/cjs/can-mustache",
-  "browser": {
-    "transform": [
-      "cssify"
-    ]
-  },
-  "browserify": {
-    "transform": [
-      "cssify"
-    ]
-  },
   "keywords": [
     "Can",
     "JS",
@@ -64,7 +54,6 @@
   },
   "devDependencies": {
     "benchmark": "^2.1.0",
-    "cssify": "^0.6.0",
     "documentjs": "^0.4.2",
     "donejs-cli": "^0.7.0",
     "generator-donejs": "^0.7.0",
