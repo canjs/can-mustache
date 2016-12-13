@@ -49,18 +49,18 @@
   },
   "dependencies": {
     "can": "canjs/canjs#major",
-    "can-legacy-view-helpers": "^0.1.0",
-    "jquery": "~2.2.1"
+    "can-legacy-view-helpers": "^0.4.2",
+    "jquery": "~3.1.1"
   },
   "devDependencies": {
     "benchmark": "^2.1.0",
     "documentjs": "^0.4.2",
-    "donejs-cli": "^0.7.0",
-    "generator-donejs": "^0.7.0",
+    "donejs-cli": "^0.9.5",
+    "generator-donejs": "^0.9.6",
     "jshint": "^2.9.1",
-    "steal": "^0.14.0",
+    "steal": "^0.16.43",
     "steal-qunit": "^0.1.1",
-    "steal-tools": "^0.14.1",
-    "testee": "^0.2.4"
+    "steal-tools": "^0.16.8",
+    "testee": "^0.3.0"
   }
 }
