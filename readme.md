@@ -1,74 +1,26 @@
 # can-mustache
 
-[![Build Status](https://travis-ci.org/canjs/can-mustache.png?branch=master)](https://travis-ci.org/canjs/can-mustache)
+[![Join the chat at https://gitter.im/canjs/canjs](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/canjs/canjs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/canjs/can-mustache/blob/master/LICENSE.md)
+[![npm version](https://badge.fury.io/js/can-mustache.svg)](https://www.npmjs.com/package/can-mustache)
+[![Travis build status](https://travis-ci.org/canjs/can-mustache.svg?branch=master)](https://travis-ci.org/canjs/can-mustache)
+[![Greenkeeper badge](https://badges.greenkeeper.io/canjs/can-mustache.svg)](https://greenkeeper.io/)
 
 Legacy Mustache view layer for CanJS. While this code has been heavily tested and is considered stable, it is no longer supported or maintained. CanJS now ships with Stache which is much more feature rich and much faster - you should use it instead!
 
-## Usage
+## Documentation
 
-### ES6 use
+Read the [API docs on CanJS.com](https://canjs.com/doc/can-mustache.html).
 
-With StealJS, you can import this module directly in a template that is autorendered:
+## Changelog
 
-```js
-import plugin from 'can-mustache';
-```
-
-### CommonJS use
-
-Use `require` to load `can-mustache` and everything else
-needed to create a template that uses `can-mustache`:
-
-```js
-var plugin = require("can-mustache");
-```
-
-## AMD use
-
-Configure the `can` and `jquery` paths and the `can-mustache` package:
-
-```html
-<script src="require.js"></script>
-<script>
-	require.config({
-	    paths: {
-	        "jquery": "node_modules/jquery/dist/jquery",
-	        "can": "node_modules/canjs/dist/amd/can"
-	    },
-	    packages: [{
-		    	name: 'can-mustache',
-		    	location: 'node_modules/can-mustache/dist/amd',
-		    	main: 'lib/can-mustache'
-	    }]
-	});
-	require(["main-amd"], function(){});
-</script>
-```
-
-### Standalone use
-
-Load the `global` version of the plugin:
-
-```html
-<script src='./node_modules/can-mustache/dist/global/can-mustache.js'></script>
-```
+See the [latest releases on GitHub](https://github.com/canjs/can-mustache/releases).
 
 ## Contributing
 
-### Making a Build
+The [contribution guide](https://github.com/canjs/can-mustache/blob/master/CONTRIBUTING.md) has information on getting help, reporting bugs, developing locally, and more.
 
-To make a build of the distributables into `dist/` in the cloned repository run
+## License
 
-```
-npm install
-node build
-```
+[MIT](https://github.com/canjs/can-mustache/blob/master/LICENSE.md)
 
-### Running the tests
-
-Tests can run in the browser by opening a webserver and visiting the `test.html` page.
-Automated tests that run the tests from the command line in Firefox can be run with
-
-```
-npm test
-```
