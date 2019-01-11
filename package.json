@@ -54,7 +54,7 @@
   },
   "devDependencies": {
     "benchmark": "^2.1.0",
-    "documentjs": "^0.4.2",
+    "documentjs": "^0.5.5",
     "donejs-cli": "^1.0.1",
     "generator-donejs": "^1.0.5",
     "jshint": "^2.9.1",
