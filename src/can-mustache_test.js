@@ -6,7 +6,7 @@ var can = require("./can-mustache");
 require("can-legacy-view-helpers/test-helper");
 
 QUnit.module("can-mustache, rendering", {
-	setup: function () {
+	beforeEach: function(assert) {
 		can.view.ext = '.mustache';
 
 		this.animals = ['sloth', 'bear', 'monkey']
@@ -56,7 +56,7 @@ var override = {
 can.each(window.MUSTACHE_SPECS, function(specData){
 	var spec = specData.name;
 	can.each(specData.data.tests, function (t) {
-		QUnit.test('specs/' + spec + ' - ' + t.name + ': ' + t.desc, function () {
+		QUnit.test('specs/' + spec + ' - ' + t.name + ': ' + t.desc, function(assert) {
 			// can uses &#34; to escape double quotes, mustache expects &quot;.
 			// can uses \n for new lines, mustache expects \r\n.
 			var expected = (override[spec] && override[spec][t.name]) || t.expected.replace(/&quot;/g, '&#34;')
@@ -82,7 +82,7 @@ can.each(window.MUSTACHE_SPECS, function(specData){
 				t.data.lambda = eval('(' + t.data.lambda.js + ')');
 			}
 
-			QUnit.deepEqual(new can.Mustache({
+			assert.deepEqual(new can.Mustache({
 					text: t.template
 				})
 				.render(t.data), expected);
@@ -97,13 +97,13 @@ var getAttr = function (el, attrName) {
 		el.getAttribute(attrName);
 }
 
-QUnit.test("basics", function () {
+QUnit.test("basics", function(assert) {
 	var template = can.view.mustache("<ul>{{#items}}<li>{{helper foo}}</li>{{/items}}</ul>");
 	template()
-	QUnit.ok(true, "just to force the issue")
+	assert.ok(true, "just to force the issue")
 })
 
-QUnit.test("Model hookup", function () {
+QUnit.test("Model hookup", function(assert) {
 
 	// Single item hookup
 	var template = '<p id="foo" {{  data "name "   }}>data rocks</p>';
@@ -115,7 +115,7 @@ QUnit.test("Model hookup", function () {
 	})
 		.render(obsvr);
 	can.append(can.$('#qunit-fixture'), can.view.frag(frag));
-	QUnit.deepEqual(can.data(can.$('#foo'), 'name '), obsvr, 'data hooks worked and fetched');
+	assert.deepEqual(can.data(can.$('#foo'), 'name '), obsvr, 'data hooks worked and fetched');
 
 	// Multi-item hookup
 	var listTemplate = '<ul id="list">{{#list}}<li class="moo" id="li-{{name}}" {{data "obsvr"}}>{{name}}</li>{{/#list}}</ul>';
@@ -128,18 +128,18 @@ QUnit.test("Model hookup", function () {
 		});
 	can.append(can.$('#qunit-fixture'), can.view.frag(listFrag));
 
-	QUnit.deepEqual(can.data(can.$('#li-Austin'), 'obsvr'), obsvr, 'data hooks for list worked and fetched');
+	assert.deepEqual(can.data(can.$('#li-Austin'), 'obsvr'), obsvr, 'data hooks for list worked and fetched');
 
 	// Mulit-item update with hookup
 	var obsvr2 = new can.Map({
 		name: 'Justin'
 	});
 	obsvrList.push(obsvr2);
-	QUnit.deepEqual(can.data(can.$('#li-Justin'), 'obsvr'), obsvr2, 'data hooks for list push worked and fetched');
+	assert.deepEqual(can.data(can.$('#li-Justin'), 'obsvr'), obsvr2, 'data hooks for list push worked and fetched');
 
 	// Delete last item added
 	obsvrList.pop();
-	QUnit.deepEqual(can.$('.moo')
+	assert.deepEqual(can.$('.moo')
 		.length, 1, 'new item popped off and deleted from ui');
 });
 
@@ -161,7 +161,7 @@ QUnit.test("Model hookup", function () {
  var template = "<div id='sectionshelper'>{{#filter}}moo{{/filter}}</div>";
  var frag = new can.Mustache({ text: template }).render({ });;
  can.append( can.$('#qunit-fixture'), can.view.frag(frag));
- QUnit.deepEqual(can.$('#sectionshelper')[0].innerHTML, "moo", 'helper section worked');
+ assert.deepEqual(can.$('#sectionshelper')[0].innerHTML, "moo", 'helper section worked');
 
  });
 
@@ -175,14 +175,14 @@ QUnit.test("Model hookup", function () {
  var obsvr = new can.Map({ filter: 'moo' });
  var frag = new can.Mustache({ text: template }).render({ filter: obsvr });;
  can.append( can.$('#qunit-fixture'), can.view.frag(frag));
- QUnit.deepEqual(can.$('#sectionshelper')[0].innerHTML, "", 'helper section showed none');
+ assert.deepEqual(can.$('#sectionshelper')[0].innerHTML, "", 'helper section showed none');
 
  obsvr.attr('filter', 'poo')
- QUnit.deepEqual(can.$('#sectionshelper')[0].innerHTML, "poo", 'helper section worked');
+ assert.deepEqual(can.$('#sectionshelper')[0].innerHTML, "poo", 'helper section worked');
  });
  */
 
-QUnit.test('Tokens returning 0 where they should diplay the number', function () {
+QUnit.test('Tokens returning 0 where they should diplay the number', function(assert) {
 	var template = "<div id='zero'>{{completed}}</div>";
 	var frag = new can.Mustache({
 		text: template
@@ -191,10 +191,10 @@ QUnit.test('Tokens returning 0 where they should diplay the number', function ()
 			completed: 0
 		});
 	can.append(can.$('#qunit-fixture'), can.view.frag(frag));
-	QUnit.deepEqual(can.$('#zero')[0].innerHTML, "0", 'zero shown');
+	assert.deepEqual(can.$('#zero')[0].innerHTML, "0", 'zero shown');
 })
 
-QUnit.test('Inverted section function returning numbers', function () {
+QUnit.test('Inverted section function returning numbers', function(assert) {
 	var template = "<div id='completed'>{{^todos.completed}}hidden{{/todos.completed}}</div>";
 	var obsvr = new can.Map({
 		named: false
@@ -214,16 +214,16 @@ QUnit.test('Inverted section function returning numbers', function () {
 			todos: todos
 		});
 	can.append(can.$('#qunit-fixture'), can.view.frag(frag));
-	QUnit.deepEqual(can.$('#completed')[0].innerHTML, "hidden", 'hidden shown');
+	assert.deepEqual(can.$('#completed')[0].innerHTML, "hidden", 'hidden shown');
 
 	// now update the named attribute
 	obsvr.attr('named', true);
-	QUnit.deepEqual(can.$('#completed')[0].innerHTML, "", 'hidden gone');
+	assert.deepEqual(can.$('#completed')[0].innerHTML, "", 'hidden gone');
 
 	can.remove(can.$('#qunit-fixture>*'));
 });
 
-QUnit.test("Mustache live-binding with escaping", function () {
+QUnit.test("Mustache live-binding with escaping", function(assert) {
 	var template = "<span id='binder1'>{{ name }}</span><span id='binder2'>{{{name}}}</span>";
 
 	var teacher = new can.Map({
@@ -236,18 +236,18 @@ QUnit.test("Mustache live-binding with escaping", function () {
 
 	can.append(can.$('#qunit-fixture'), can.view.frag(tpl.render(teacher)));
 
-	QUnit.deepEqual(can.$('#binder1')[0].innerHTML, "&lt;strong&gt;Mrs Peters&lt;/strong&gt;");
-	QUnit.deepEqual(can.$('#binder2')[0].getElementsByTagName('strong')[0].innerHTML, "Mrs Peters");
+	assert.deepEqual(can.$('#binder1')[0].innerHTML, "&lt;strong&gt;Mrs Peters&lt;/strong&gt;");
+	assert.deepEqual(can.$('#binder2')[0].getElementsByTagName('strong')[0].innerHTML, "Mrs Peters");
 
 	teacher.attr('name', '<i>Mr Scott</i>');
 
-	QUnit.deepEqual(can.$('#binder1')[0].innerHTML, "&lt;i&gt;Mr Scott&lt;/i&gt;");
-	QUnit.deepEqual(can.$('#binder2')[0].getElementsByTagName('i')[0].innerHTML, "Mr Scott")
+	assert.deepEqual(can.$('#binder1')[0].innerHTML, "&lt;i&gt;Mr Scott&lt;/i&gt;");
+	assert.deepEqual(can.$('#binder2')[0].getElementsByTagName('i')[0].innerHTML, "Mr Scott")
 
 	can.remove(can.$('#qunit-fixture>*'));
 });
 
-QUnit.test("Mustache truthy", function () {
+QUnit.test("Mustache truthy", function(assert) {
 	var t = {
 		template: "{{#name}}Do something, {{name}}!{{/name}}",
 		expected: "Do something, Andy!",
@@ -258,13 +258,13 @@ QUnit.test("Mustache truthy", function () {
 
 	var expected = t.expected.replace(/&quot;/g, '&#34;')
 		.replace(/\r\n/g, '\n');
-	QUnit.deepEqual(new can.Mustache({
+	assert.deepEqual(new can.Mustache({
 			text: t.template
 		})
 		.render(t.data), expected);
 });
 
-QUnit.test("Mustache falsey", function () {
+QUnit.test("Mustache falsey", function(assert) {
 	var t = {
 		template: "{{^cannot}}Don't do it, {{name}}!{{/cannot}}",
 		expected: "Don't do it, Andy!",
@@ -275,13 +275,13 @@ QUnit.test("Mustache falsey", function () {
 
 	var expected = t.expected.replace(/&quot;/g, '&#34;')
 		.replace(/\r\n/g, '\n');
-	QUnit.deepEqual(new can.Mustache({
+	assert.deepEqual(new can.Mustache({
 			text: t.template
 		})
 		.render(t.data), expected);
 });
 
-QUnit.test("Handlebars helpers", function () {
+QUnit.test("Handlebars helpers", function(assert) {
 	can.Mustache.registerHelper('hello', function (/*options*/) {
 		return 'Should not hit this';
 	});
@@ -310,10 +310,10 @@ QUnit.test("Handlebars helpers", function () {
 	var expected = t.expected.replace(/&quot;/g, '&#34;')
 		.replace(/\r\n/g, '\n');
 
-	QUnit.deepEqual(new can.Mustache({ text: t.template }).render(t.data), expected);
+	assert.deepEqual(new can.Mustache({ text: t.template }).render(t.data), expected);
 });
 
-QUnit.test("Handlebars advanced helpers (from docs)", function () {
+QUnit.test("Handlebars advanced helpers (from docs)", function(assert) {
 	Mustache.registerHelper('exercise', function (group, action, num, options) {
 		if (group && group.length > 0 && action && num > 0) {
 			return options.fn({
@@ -343,17 +343,17 @@ QUnit.test("Handlebars advanced helpers (from docs)", function () {
 		}
 	};
 
-	QUnit.deepEqual(new can.Mustache({
+	assert.deepEqual(new can.Mustache({
 			text: t.template
 		})
 		.render(t.data), t.expected);
-	QUnit.deepEqual(new can.Mustache({
+	assert.deepEqual(new can.Mustache({
 			text: t.template
 		})
 		.render({}), t.expected2);
 });
 
-QUnit.test("Passing functions as data, then executing them", function () {
+QUnit.test("Passing functions as data, then executing them", function(assert) {
 	var t = {
 		template: "{{#nested}}{{welcome name}}{{/nested}}",
 		expected: "Welcome Andy!",
@@ -369,13 +369,13 @@ QUnit.test("Passing functions as data, then executing them", function () {
 
 	var expected = t.expected.replace(/&quot;/g, '&#34;')
 		.replace(/\r\n/g, '\n');
-	QUnit.deepEqual(new can.Mustache({
+	assert.deepEqual(new can.Mustache({
 			text: t.template
 		})
 		.render(t.data), expected);
 });
 
-QUnit.test("Absolute partials", function () {
+QUnit.test("Absolute partials", function(assert) {
 	var test_template = can.test.path('src/test/test_template.mustache');
 	var t = {
 		template1: "{{> " + test_template + "}}",
@@ -383,17 +383,17 @@ QUnit.test("Absolute partials", function () {
 		expected: "Partials Rock"
 	};
 
-	QUnit.deepEqual(new can.Mustache({
+	assert.deepEqual(new can.Mustache({
 			text: t.template1
 		})
 		.render({}), t.expected);
-	QUnit.deepEqual(new can.Mustache({
+	assert.deepEqual(new can.Mustache({
 			text: t.template2
 		})
 		.render({}), t.expected);
 });
 
-QUnit.test("No arguments passed to helper", function () {
+QUnit.test("No arguments passed to helper", function(assert) {
 	can.view.mustache("noargs", "{{noargHelper}}");
 	can.Mustache.registerHelper("noargHelper", function () {
 		return "foo"
@@ -404,11 +404,11 @@ QUnit.test("No arguments passed to helper", function () {
 	div1.appendChild(can.view("noargs", {}));
 	div2.appendChild(can.view("noargs", new can.Map()));
 
-	QUnit.deepEqual(div1.innerHTML, "foo");
-	QUnit.deepEqual(div2.innerHTML, "foo");
+	assert.deepEqual(div1.innerHTML, "foo");
+	assert.deepEqual(div2.innerHTML, "foo");
 });
 
-QUnit.test("No arguments passed to helper with list", function () {
+QUnit.test("No arguments passed to helper with list", function(assert) {
 	can.view.mustache("noargs", "{{#items}}{{noargHelper}}{{/items}}");
 	var div = document.createElement('div');
 
@@ -422,10 +422,10 @@ QUnit.test("No arguments passed to helper with list", function () {
 		}
 	}));
 
-	QUnit.deepEqual(div.innerHTML, "foo");
+	assert.deepEqual(div.innerHTML, "foo");
 });
 
-QUnit.test("String literals passed to helper should work (#1143)", 1, function() {
+QUnit.test("String literals passed to helper should work (#1143)", 1, function(assert) {
 	can.Mustache.registerHelper("concatStrings", function(arg1, arg2) {
 		return arg1 + arg2;
 	});
@@ -436,10 +436,10 @@ QUnit.test("String literals passed to helper should work (#1143)", 1, function()
 	var div = document.createElement('div');
 	div.appendChild(can.view('testStringArgs', {}));
 
-	QUnit.equal(div.innerHTML, '==word');
+	assert.equal(div.innerHTML, '==word');
 });
 
-QUnit.test("Partials and observes", function () {
+QUnit.test("Partials and observes", function(assert) {
 	var template;
 	var div = document.createElement('div');
 
@@ -454,12 +454,12 @@ QUnit.test("Partials and observes", function () {
 	div.appendChild(dom);
 	var ths = div.getElementsByTagName('th');
 
-	QUnit.equal(ths.length, 2, 'Got two table headings');
-	QUnit.equal(ths[0].innerHTML, 'hi', 'First column heading correct');
-	QUnit.equal(ths[1].innerHTML, 'there', 'Second column heading correct');
+	assert.equal(ths.length, 2, 'Got two table headings');
+	assert.equal(ths[0].innerHTML, 'hi', 'First column heading correct');
+	assert.equal(ths[1].innerHTML, 'there', 'Second column heading correct');
 });
 
-QUnit.test("Deeply nested partials", function () {
+QUnit.test("Deeply nested partials", function(assert) {
 	var t = {
 		template: "{{#nest1}}{{#nest2}}{{>partial}}{{/nest2}}{{/nest1}}",
 		expected: "Hello!",
@@ -480,13 +480,13 @@ QUnit.test("Deeply nested partials", function () {
 		can.view.registerView(name, t.partials[name], ".mustache")
 	}
 
-	QUnit.deepEqual(new can.Mustache({
+	assert.deepEqual(new can.Mustache({
 			text: t.template
 		})
 		.render(t.data), t.expected);
 });
 
-QUnit.test("Partials correctly set context", function () {
+QUnit.test("Partials correctly set context", function(assert) {
 	var t = {
 		template: "{{#users}}{{>partial}}{{/users}}",
 		expected: "foo - bar",
@@ -504,13 +504,13 @@ QUnit.test("Partials correctly set context", function () {
 		can.view.registerView(name, t.partials[name], ".mustache")
 	}
 
-	QUnit.deepEqual(new can.Mustache({
+	assert.deepEqual(new can.Mustache({
 			text: t.template
 		})
 		.render(t.data), t.expected);
 });
 
-QUnit.test("Handlebars helper: if/else", function () {
+QUnit.test("Handlebars helper: if/else", function(assert) {
 	var expected;
 	var t = {
 		template: "{{#if name}}{{name}}{{/if}}{{#if missing}} is missing!{{/if}}",
@@ -523,7 +523,7 @@ QUnit.test("Handlebars helper: if/else", function () {
 
 	expected = t.expected.replace(/&quot;/g, '&#34;')
 		.replace(/\r\n/g, '\n');
-	QUnit.deepEqual(new can.Mustache({
+	assert.deepEqual(new can.Mustache({
 			text: t.template
 		})
 		.render(t.data), expected);
@@ -531,13 +531,13 @@ QUnit.test("Handlebars helper: if/else", function () {
 	t.data.missing = null;
 	expected = t.expected.replace(/&quot;/g, '&#34;')
 		.replace(/\r\n/g, '\n');
-	QUnit.deepEqual(new can.Mustache({
+	assert.deepEqual(new can.Mustache({
 			text: t.template
 		})
 		.render(t.data), expected);
 });
 
-QUnit.test("Handlebars helper: is/else (with 'eq' alias)", function() {
+QUnit.test("Handlebars helper: is/else (with 'eq' alias)", function(assert) {
 
 	var t = {
 		template: '{{#eq "10" "10" ducks getDucks}}10 ducks{{else}}Not 10 ducks{{/eq}}',
@@ -559,21 +559,21 @@ QUnit.test("Handlebars helper: is/else (with 'eq' alias)", function() {
 	var div = document.createElement('div');
 
 	div.appendChild(can.view.mustache(t.template)(t.data));
-	QUnit.deepEqual(div.innerHTML, t.expected);
+	assert.deepEqual(div.innerHTML, t.expected);
 
 	div = document.createElement('div');
 	div.appendChild(can.view.mustache(t.template)(t.liveData));
-	QUnit.deepEqual(div.innerHTML, t.expected);
+	assert.deepEqual(div.innerHTML, t.expected);
 
 	t.data.ducks = 5;
 
 	div = document.createElement('div');
 	div.appendChild(can.view.mustache(t.template)(t.data));
-	QUnit.deepEqual(div.innerHTML, 'Not 10 ducks');
+	assert.deepEqual(div.innerHTML, 'Not 10 ducks');
 });
 
 
-QUnit.test("Handlebars helper: unless", function () {
+QUnit.test("Handlebars helper: unless", function(assert) {
 	var t = {
 		template: "{{#unless missing}}Andy is missing!{{/unless}}" +
 		          "{{#unless isCool}} But he wasn't cool anyways.{{/unless}}",
@@ -592,7 +592,7 @@ QUnit.test("Handlebars helper: unless", function () {
 
 	var expected = t.expected.replace(/&quot;/g, '&#34;')
 		.replace(/\r\n/g, '\n');
-	QUnit.deepEqual(new can.Mustache({
+	assert.deepEqual(new can.Mustache({
 			text: t.template
 		})
 		.render(t.data), expected);
@@ -600,12 +600,12 @@ QUnit.test("Handlebars helper: unless", function () {
 	// #1019 #unless does not live bind
 	var div = document.createElement('div');
 	div.appendChild(can.view.mustache(t.template)(t.liveData));
-	QUnit.deepEqual(div.innerHTML, expected, '#unless condition false');
+	assert.deepEqual(div.innerHTML, expected, '#unless condition false');
 	t.liveData.attr('missing', true);
-	QUnit.deepEqual(div.innerHTML, '', '#unless condition true');
+	assert.deepEqual(div.innerHTML, '', '#unless condition true');
 });
 
-QUnit.test("Handlebars helper: each", function () {
+QUnit.test("Handlebars helper: each", function(assert) {
 	var t = {
 		template: "{{#each names}}{{this}} {{/each}}",
 		expected: "Andy Austin Justin ",
@@ -619,18 +619,18 @@ QUnit.test("Handlebars helper: each", function () {
 
 	var expected = t.expected.replace(/&quot;/g, '&#34;')
 		.replace(/\r\n/g, '\n');
-	QUnit.deepEqual(new can.Mustache({
+	assert.deepEqual(new can.Mustache({
 			text: t.template
 		})
 		.render(t.data), expected);
 
 	var div = document.createElement('div');
 	div.appendChild(can.view.mustache(t.template)(t.data2));
-	QUnit.deepEqual(div.innerHTML, expected, 'Using Observe.List');
+	assert.deepEqual(div.innerHTML, expected, 'Using Observe.List');
 	t.data2.names.push('What');
 });
 
-QUnit.test("Handlebars helper: with", function () {
+QUnit.test("Handlebars helper: with", function(assert) {
 	var t = {
 		template: "{{#with person}}{{name}}{{/with}}",
 		expected: "Andy",
@@ -643,13 +643,13 @@ QUnit.test("Handlebars helper: with", function () {
 
 	var expected = t.expected.replace(/&quot;/g, '&#34;')
 		.replace(/\r\n/g, '\n');
-	QUnit.deepEqual(new can.Mustache({
+	assert.deepEqual(new can.Mustache({
 			text: t.template
 		})
 		.render(t.data), expected);
 });
 
-QUnit.test("render with left bracket", function () {
+QUnit.test("render with left bracket", function(assert) {
 	var compiled = new can.Mustache({
 		text: this.squareBrackets,
 		type: '['
@@ -657,9 +657,9 @@ QUnit.test("render with left bracket", function () {
 		.render({
 			animals: this.animals
 		})
-	QUnit.equal(compiled, "<ul><li>sloth</li><li>bear</li><li>monkey</li></ul>", "renders with bracket")
+	assert.equal(compiled, "<ul><li>sloth</li><li>bear</li><li>monkey</li></ul>", "renders with bracket")
 });
-QUnit.test("render with with", function () {
+QUnit.test("render with with", function(assert) {
 	var compiled = new can.Mustache({
 		text: this.squareBracketsNoThis,
 		type: '['
@@ -667,9 +667,9 @@ QUnit.test("render with with", function () {
 		.render({
 			animals: this.animals
 		});
-	QUnit.equal(compiled, "<ul><li>sloth</li><li>bear</li><li>monkey</li></ul>", "renders bracket with no this")
+	assert.equal(compiled, "<ul><li>sloth</li><li>bear</li><li>monkey</li></ul>", "renders bracket with no this")
 });
-QUnit.test("default carrot", function () {
+QUnit.test("default carrot", function(assert) {
 	var compiled = new can.Mustache({
 		text: this.angleBracketsNoThis
 	})
@@ -677,9 +677,9 @@ QUnit.test("default carrot", function () {
 			animals: this.animals
 		});
 
-	QUnit.equal(compiled, "<ul><li>sloth</li><li>bear</li><li>monkey</li></ul>")
+	assert.equal(compiled, "<ul><li>sloth</li><li>bear</li><li>monkey</li></ul>")
 })
-QUnit.test("render with double angle", function () {
+QUnit.test("render with double angle", function(assert) {
 	var text = "{{& replace_me }}{{{ replace_me_too }}}" +
 		"<ul>{{#animals}}" +
 		"<li>{{.}}</li>" +
@@ -690,10 +690,10 @@ QUnit.test("render with double angle", function () {
 		.render({
 			animals: this.animals
 		});
-	QUnit.equal(compiled, "<ul><li>sloth</li><li>bear</li><li>monkey</li></ul>", "works")
+	assert.equal(compiled, "<ul><li>sloth</li><li>bear</li><li>monkey</li></ul>", "works")
 });
 
-QUnit.test("comments", function () {
+QUnit.test("comments", function(assert) {
 	var text = "{{! replace_me }}" +
 		"<ul>{{#animals}}" +
 		"<li>{{.}}</li>" +
@@ -704,20 +704,20 @@ QUnit.test("comments", function () {
 		.render({
 			animals: this.animals
 		});
-	QUnit.equal(compiled, "<ul><li>sloth</li><li>bear</li><li>monkey</li></ul>")
+	assert.equal(compiled, "<ul><li>sloth</li><li>bear</li><li>monkey</li></ul>")
 });
 
-QUnit.test("multi line", function () {
+QUnit.test("multi line", function(assert) {
 	var text = "a \n b \n c",
 		result = new can.Mustache({
 			text: text
 		})
 			.render({});
 
-	QUnit.equal(result, text)
+	assert.equal(result, text)
 })
 
-QUnit.test("multi line elements", function () {
+QUnit.test("multi line elements", function(assert) {
 	var text = "<img\n class=\"{{myClass}}\" />",
 		result = new can.Mustache({
 			text: text
@@ -726,13 +726,13 @@ QUnit.test("multi line elements", function () {
 				myClass: 'a'
 			});
 
-	QUnit.ok(result.indexOf("<img\n class=\"a\"") !== -1, "Multi-line elements render correctly.");
+	assert.ok(result.indexOf("<img\n class=\"a\"") !== -1, "Multi-line elements render correctly.");
 	
 	// clear hookups b/c we are using .render;
 	can.view.hookups = {};
 })
 
-QUnit.test("escapedContent", function () {
+QUnit.test("escapedContent", function(assert) {
 	var text = "<span>{{ tags }}</span><label>&amp;</label><strong>{{ number }}</strong><input value='{{ quotes }}'/>";
 	var compiled = new can.Mustache({
 		text: text
@@ -746,15 +746,15 @@ QUnit.test("escapedContent", function () {
 	var div = document.createElement('div');
 	div.innerHTML = compiled;
 
-	QUnit.equal(div.getElementsByTagName('span')[0].firstChild.nodeValue, "foo < bar < car > zar > poo");
-	QUnit.equal(div.getElementsByTagName('strong')[0].firstChild.nodeValue, 123);
-	QUnit.equal(div.getElementsByTagName('input')[0].value, "I use 'quote' fingers & &amp;ersands \"a lot\"", "attributes are always safe, and strings are kept as-is without additional escaping");
-	QUnit.equal(div.getElementsByTagName('label')[0].innerHTML, "&amp;");
+	assert.equal(div.getElementsByTagName('span')[0].firstChild.nodeValue, "foo < bar < car > zar > poo");
+	assert.equal(div.getElementsByTagName('strong')[0].firstChild.nodeValue, 123);
+	assert.equal(div.getElementsByTagName('input')[0].value, "I use 'quote' fingers & &amp;ersands \"a lot\"", "attributes are always safe, and strings are kept as-is without additional escaping");
+	assert.equal(div.getElementsByTagName('label')[0].innerHTML, "&amp;");
 	// clear hookups b/c we are using .render;
 	can.view.hookups = {};
 })
 
-QUnit.test("unescapedContent", function () {
+QUnit.test("unescapedContent", function(assert) {
 	var text = "<span>{{{ tags }}}</span><div>{{{ tags }}}</div><input value='{{{ quotes }}}'/>";
 	var compiled = new can.Mustache({
 		text: text
@@ -767,10 +767,10 @@ QUnit.test("unescapedContent", function () {
 	var div = document.createElement('div');
 	div.innerHTML = compiled;
 
-	QUnit.equal(div.getElementsByTagName('span')[0].firstChild.nodeType, 1);
-	QUnit.equal(div.getElementsByTagName('div')[0].innerHTML.toLowerCase(), "<strong>foo</strong><strong>bar</strong>");
-	QUnit.equal(div.getElementsByTagName('span')[0].innerHTML.toLowerCase(), "<strong>foo</strong><strong>bar</strong>");
-	QUnit.equal(div.getElementsByTagName('input')[0].value, "I use 'quote' fingers \"a lot\"", "escaped no matter what");
+	assert.equal(div.getElementsByTagName('span')[0].firstChild.nodeType, 1);
+	assert.equal(div.getElementsByTagName('div')[0].innerHTML.toLowerCase(), "<strong>foo</strong><strong>bar</strong>");
+	assert.equal(div.getElementsByTagName('span')[0].innerHTML.toLowerCase(), "<strong>foo</strong><strong>bar</strong>");
+	assert.equal(div.getElementsByTagName('input')[0].value, "I use 'quote' fingers \"a lot\"", "escaped no matter what");
 	// clear hookups b/c we are using .render;
 	can.view.hookups = {};
 });
@@ -788,20 +788,20 @@ QUnit.test("unescapedContent", function () {
  items: ['a','b']
  });
  // make sure expected values are in res
- QUnit.ok(/\s4\s/.test(res), "first block called" );
- QUnit.equal(res.match(/ItemsLength4/g).length, 4, "innerBlock and each")
+ assert.ok(/\s4\s/.test(res), "first block called" );
+ assert.equal(res.match(/ItemsLength4/g).length, 4, "innerBlock and each")
  }); */
 
-QUnit.test("easy hookup", function () {
+QUnit.test("easy hookup", function(assert) {
 	var div = document.createElement('div');
 	div.appendChild(can.view(can.test.path("src/test/easyhookup.mustache"), {
 		text: "yes"
 	}))
 
-	QUnit.ok(div.getElementsByTagName('div')[0].className.indexOf("yes") !== -1, "has yes")
+	assert.ok(div.getElementsByTagName('div')[0].className.indexOf("yes") !== -1, "has yes")
 });
 
-QUnit.test('multiple function hookups in a tag', function () {
+QUnit.test('multiple function hookups in a tag', function(assert) {
 
 	var text = "<span {{(el)-> can.data(can.$(el),'foo','bar')}}" +
 		" {{(el)-> can.data(can.$(el),'baz','qux')}}>lorem ipsum</span>",
@@ -814,8 +814,8 @@ QUnit.test('multiple function hookups in a tag', function () {
 	div.appendChild(can.view.frag(compiled));
 	var span = div.getElementsByTagName('span')[0];
 
-	QUnit.equal(can.data(can.$(span), 'foo'), 'bar', "first hookup");
-	QUnit.equal(can.data(can.$(span), 'baz'), 'qux', "second hookup");
+	assert.equal(can.data(can.$(span), 'foo'), 'bar', "first hookup");
+	assert.equal(can.data(can.$(span), 'baz'), 'qux', "second hookup");
 	// clear hookups b/c we are using .render;
 	can.view.hookups = {};
 
@@ -838,15 +838,15 @@ QUnit.test('multiple function hookups in a tag', function () {
 
  var text = "<div>{{ simpleHelper() }}</div>";
  var compiled = new can.Mustache({text: text}).render() ;
- QUnit.equal(compiled, "<div>Simple</div>");
+ assert.equal(compiled, "<div>Simple</div>");
 
  text = "<div id=\"hookup\" {{ elementHelper() }}></div>";
  compiled = new can.Mustache({text: text}).render() ;
  can.append( can.$('#qunit-fixture'), can.view.frag(compiled));
- QUnit.equal(can.$('#hookup')[0].innerHTML, "Simple");
+ assert.equal(can.$('#hookup')[0].innerHTML, "Simple");
  }); */
 
-QUnit.test("attribute single unescaped, html single unescaped", function () {
+QUnit.test("attribute single unescaped, html single unescaped", function(assert) {
 
 	var text = "<div id='me' class='{{#task.completed}}complete{{/task.completed}}'>{{ task.name }}</div>";
 	var task = new can.Map({
@@ -863,22 +863,22 @@ QUnit.test("attribute single unescaped, html single unescaped", function () {
 
 	div.appendChild(can.view.frag(compiled))
 
-	QUnit.equal(div.getElementsByTagName('div')[0].innerHTML, "dishes", "html correctly dishes")
-	QUnit.equal(div.getElementsByTagName('div')[0].className, "", "class empty")
+	assert.equal(div.getElementsByTagName('div')[0].innerHTML, "dishes", "html correctly dishes")
+	assert.equal(div.getElementsByTagName('div')[0].className, "", "class empty")
 
 	task.attr('name', 'lawn')
 
-	QUnit.equal(div.getElementsByTagName('div')[0].innerHTML, "lawn", "html correctly lawn")
-	QUnit.equal(div.getElementsByTagName('div')[0].className, "", "class empty")
+	assert.equal(div.getElementsByTagName('div')[0].innerHTML, "lawn", "html correctly lawn")
+	assert.equal(div.getElementsByTagName('div')[0].className, "", "class empty")
 
 	task.attr('completed', true);
 
-	QUnit.equal(div.getElementsByTagName('div')[0].className, "complete", "class changed to complete");
+	assert.equal(div.getElementsByTagName('div')[0].className, "complete", "class changed to complete");
 	// clear hookups b/c we are using .render;
 	can.view.hookups = {};
 });
 
-QUnit.test("event binding / triggering on options", function () {
+QUnit.test("event binding / triggering on options", function(assert) {
 	var addEventListener = function (el, name, fn) {
 		if (el.addEventListener) {
 			el.addEventListener(name, fn, false);
@@ -892,12 +892,12 @@ QUnit.test("event binding / triggering on options", function () {
 	qta.appendChild(frag);
 
 	/*qta.addEventListener("foo", function(){
-	 QUnit.ok(false, "event handler called")
+	 assert.ok(false, "event handler called")
 	 },false)*/
 
 	// destroyed events should not bubble
 	addEventListener(qta.getElementsByTagName("option")[0], "foo", function (ev) {
-		QUnit.ok(true, "option called");
+		assert.ok(true, "option called");
 		if (ev.stopPropagation) {
 			ev.stopPropagation();
 		}
@@ -905,7 +905,7 @@ QUnit.test("event binding / triggering on options", function () {
 	});
 
 	addEventListener(qta.getElementsByTagName("select")[0], "foo", function () {
-		QUnit.ok(true, "select called")
+		assert.ok(true, "select called")
 	});
 
 	var ev;
@@ -929,14 +929,14 @@ QUnit.test("event binding / triggering on options", function () {
 
 	can.trigger(qta, "foo")
 
-	QUnit.stop();
+	var done = assert.async();
 	setTimeout(function () {
-		QUnit.start();
-		QUnit.ok(true);
+		done();
+		assert.ok(true);
 	}, 100)
 })
 
-QUnit.test("select live binding", function () {
+QUnit.test("select live binding", function(assert) {
 	var text = "<select>{{ #todos }}<option>{{ name }}</option>{{ /todos }}</select>";
 	var Todos, compiled, div;
 	Todos = new can.List([{
@@ -952,25 +952,25 @@ QUnit.test("select live binding", function () {
 	div = document.createElement('div');
 
 	div.appendChild(can.view.frag(compiled))
-	QUnit.equal(div.getElementsByTagName('option')
+	assert.equal(div.getElementsByTagName('option')
 		.length, 1, '1 item in list')
 
 	Todos.push({
 		id: 2,
 		name: 'Laundry'
 	})
-	QUnit.equal(div.getElementsByTagName('option')
+	assert.equal(div.getElementsByTagName('option')
 		.length, 2, '2 items in list')
 
 	Todos.splice(0, 2);
-	QUnit.equal(div.getElementsByTagName('option')
+	assert.equal(div.getElementsByTagName('option')
 		.length, 0, '0 items in list');
 		
 	// clear hookups b/c we are using .render;
 	can.view.hookups = {};
 });
 
-QUnit.test('multiple hookups in a single attribute', function () {
+QUnit.test('multiple hookups in a single attribute', function(assert) {
 	var text = '<div class=\'{{ obs.foo }}' +
 		'{{ obs.bar }}{{ obs.baz }}{{ obs.nest.what }}\'></div>';
 
@@ -996,25 +996,25 @@ QUnit.test('multiple hookups in a single attribute', function () {
 
 	var innerDiv = div.childNodes[0];
 
-	QUnit.equal(getAttr(innerDiv, 'class'), "abcd", 'initial render');
+	assert.equal(getAttr(innerDiv, 'class'), "abcd", 'initial render');
 
 	obs.attr('bar', 'e');
 
-	QUnit.equal(getAttr(innerDiv, 'class'), "aecd", 'initial render');
+	assert.equal(getAttr(innerDiv, 'class'), "aecd", 'initial render');
 
 	obs.attr('bar', 'f');
 
-	QUnit.equal(getAttr(innerDiv, 'class'), "afcd", 'initial render');
+	assert.equal(getAttr(innerDiv, 'class'), "afcd", 'initial render');
 
 	obs.nest.attr('what', 'g');
 
-	QUnit.equal(getAttr(innerDiv, 'class'), "afcg", 'nested observe');
+	assert.equal(getAttr(innerDiv, 'class'), "afcg", 'nested observe');
 	
 	// clear hookups b/c we are using .render;
 	can.view.hookups = {};
 });
 
-QUnit.test('adding and removing multiple html content within a single element', function () {
+QUnit.test('adding and removing multiple html content within a single element', function(assert) {
 
 	var text, obs, compiled;
 
@@ -1037,7 +1037,7 @@ QUnit.test('adding and removing multiple html content within a single element', 
 
 	div.appendChild(can.view.frag(compiled));
 
-	QUnit.equal(div.childNodes[0].innerHTML, 'abc', 'initial render');
+	assert.equal(div.childNodes[0].innerHTML, 'abc', 'initial render');
 
 	obs.attr({
 		a: '',
@@ -1045,19 +1045,19 @@ QUnit.test('adding and removing multiple html content within a single element', 
 		c: ''
 	});
 
-	QUnit.equal(div.childNodes[0].innerHTML, '', 'updated values');
+	assert.equal(div.childNodes[0].innerHTML, '', 'updated values');
 
 	obs.attr({
 		c: 'c'
 	});
 
-	QUnit.equal(div.childNodes[0].innerHTML, 'c', 'updated values');
+	assert.equal(div.childNodes[0].innerHTML, 'c', 'updated values');
 	
 	// clear hookups b/c we are using .render;
 	can.view.hookups = {};
 });
 
-QUnit.test('live binding and removeAttr', function () {
+QUnit.test('live binding and removeAttr', function(assert) {
 
 	var text = '{{ #obs.show }}' +
 		'<p {{ obs.attributes }} class="{{ obs.className }}"><span>{{ obs.message }}</span></p>' +
@@ -1084,53 +1084,53 @@ QUnit.test('live binding and removeAttr', function () {
 	var p = div.getElementsByTagName('p')[0],
 		span = p.getElementsByTagName('span')[0];
 
-	QUnit.equal(p.getAttribute("some"), "myText", 'initial render attr');
-	QUnit.equal(getAttr(p, "class"), "myMessage", 'initial render class');
-	QUnit.equal(span.innerHTML, 'Live long and prosper', 'initial render innerHTML');
+	assert.equal(p.getAttribute("some"), "myText", 'initial render attr');
+	assert.equal(getAttr(p, "class"), "myMessage", 'initial render class');
+	assert.equal(span.innerHTML, 'Live long and prosper', 'initial render innerHTML');
 
 	obs.removeAttr('className');
 
-	QUnit.equal(getAttr(p, "class"), '', 'class is undefined');
+	assert.equal(getAttr(p, "class"), '', 'class is undefined');
 
 	obs.attr('className', 'newClass');
 
-	QUnit.equal(getAttr(p, "class"), 'newClass', 'class updated');
+	assert.equal(getAttr(p, "class"), 'newClass', 'class updated');
 
 	obs.removeAttr('attributes');
 
-	QUnit.equal(p.getAttribute('some'), null, 'attribute is undefined');
+	assert.equal(p.getAttribute('some'), null, 'attribute is undefined');
 
 	obs.attr('attributes', 'some="newText"');
 
-	QUnit.equal(p.getAttribute('some'), 'newText', 'attribute updated');
+	assert.equal(p.getAttribute('some'), 'newText', 'attribute updated');
 
 	obs.removeAttr('message');
 
-	QUnit.equal(span.innerHTML, '', 'text node value is empty');
+	assert.equal(span.innerHTML, '', 'text node value is empty');
 
 	obs.attr('message', 'Warp drive, Mr. Sulu');
 
-	QUnit.equal(span.innerHTML, 'Warp drive, Mr. Sulu', 'text node updated');
+	assert.equal(span.innerHTML, 'Warp drive, Mr. Sulu', 'text node updated');
 
 	obs.removeAttr('show');
 
-	QUnit.equal(div.innerHTML, '', 'value in block statement is undefined');
+	assert.equal(div.innerHTML, '', 'value in block statement is undefined');
 
 	obs.attr('show', true);
 
 	p = div.getElementsByTagName('p')[0];
 	span = p.getElementsByTagName('span')[0];
 
-	QUnit.equal(p.getAttribute("some"), "newText", 'value in block statement updated attr');
-	QUnit.equal(getAttr(p, "class"), "newClass", 'value in block statement updated class');
-	QUnit.equal(span.innerHTML, 'Warp drive, Mr. Sulu', 'value in block statement updated innerHTML');
+	assert.equal(p.getAttribute("some"), "newText", 'value in block statement updated attr');
+	assert.equal(getAttr(p, "class"), "newClass", 'value in block statement updated class');
+	assert.equal(span.innerHTML, 'Warp drive, Mr. Sulu', 'value in block statement updated innerHTML');
 	
 	// clear hookups b/c we are using .render;
 	can.view.hookups = {};
 
 });
 
-QUnit.test('hookup within a tag', function () {
+QUnit.test('hookup within a tag', function(assert) {
 	var text = '<div {{ obs.foo }} ' + '{{ obs.baz }}>lorem ipsum</div>',
 
 		obs = new can.Map({
@@ -1149,27 +1149,27 @@ QUnit.test('hookup within a tag', function () {
 	div.appendChild(can.view.frag(compiled));
 	var anchor = div.getElementsByTagName('div')[0];
 
-	QUnit.equal(getAttr(anchor, 'class'), 'a');
-	QUnit.equal(anchor.getAttribute('some'), 'property');
+	assert.equal(getAttr(anchor, 'class'), 'a');
+	assert.equal(anchor.getAttribute('some'), 'property');
 
 	obs.attr('foo', 'class="b"');
-	QUnit.equal(getAttr(anchor, 'class'), 'b');
-	QUnit.equal(anchor.getAttribute('some'), 'property');
+	assert.equal(getAttr(anchor, 'class'), 'b');
+	assert.equal(anchor.getAttribute('some'), 'property');
 
 	obs.attr('baz', 'some=\'new property\'');
-	QUnit.equal(getAttr(anchor, 'class'), 'b');
-	QUnit.equal(anchor.getAttribute('some'), 'new property');
+	assert.equal(getAttr(anchor, 'class'), 'b');
+	assert.equal(anchor.getAttribute('some'), 'new property');
 
 	obs.attr('foo', 'class=""');
 	obs.attr('baz', '');
-	QUnit.equal(getAttr(anchor, 'class'), "", 'anchor class blank');
-	QUnit.equal(anchor.getAttribute('some'), undefined, 'attribute "some" is undefined');
+	assert.equal(getAttr(anchor, 'class'), "", 'anchor class blank');
+	assert.equal(anchor.getAttribute('some'), undefined, 'attribute "some" is undefined');
 	
 	// clear hookups b/c we are using .render;
 	can.view.hookups = {};
 });
 
-QUnit.test('single escaped tag, removeAttr', function () {
+QUnit.test('single escaped tag, removeAttr', function(assert) {
 	var text = '<div {{ obs.foo }}>lorem ipsum</div>',
 
 		obs = new can.Map({
@@ -1187,19 +1187,19 @@ QUnit.test('single escaped tag, removeAttr', function () {
 	div.appendChild(can.view.frag(compiled));
 	var anchor = div.getElementsByTagName('div')[0];
 
-	QUnit.equal(anchor.getAttribute('data-bar'), "john doe's bar");
+	assert.equal(anchor.getAttribute('data-bar'), "john doe's bar");
 
 	obs.removeAttr('foo');
-	QUnit.equal(anchor.getAttribute('data-bar'), null);
+	assert.equal(anchor.getAttribute('data-bar'), null);
 
 	obs.attr('foo', 'data-bar="baz"');
-	QUnit.equal(anchor.getAttribute('data-bar'), 'baz');
+	assert.equal(anchor.getAttribute('data-bar'), 'baz');
 	
 	// clear hookups b/c we are using .render;
 	can.view.hookups = {};
 });
 
-QUnit.test('html comments', function () {
+QUnit.test('html comments', function(assert) {
 	var text = '<!-- bind to changes in the todo list --> <div>{{obs.foo}}</div>';
 
 	var obs = new can.Map({
@@ -1215,13 +1215,13 @@ QUnit.test('html comments', function () {
 
 	var div = document.createElement('div');
 	div.appendChild(can.view.frag(compiled));
-	QUnit.equal(div.getElementsByTagName('div')[0].innerHTML, 'foo', 'Element as expected');
+	assert.equal(div.getElementsByTagName('div')[0].innerHTML, 'foo', 'Element as expected');
 	
 	// clear hookups b/c we are using .render;
 	can.view.hookups = {};
 })
 
-QUnit.test("hookup and live binding", function () {
+QUnit.test("hookup and live binding", function(assert) {
 
 	var text = "<div class='{{ task.completed }}' {{ (el)-> can.data(can.$(el),'task',task) }}>" +
 		"{{ task.name }}" +
@@ -1241,24 +1241,24 @@ QUnit.test("hookup and live binding", function () {
 
 	div.appendChild(can.view.frag(compiled))
 	var child = div.getElementsByTagName('div')[0];
-	QUnit.ok(child.className.indexOf("false") > -1, "is incomplete")
-	QUnit.ok( !! can.data(can.$(child), 'task'), "has data")
-	QUnit.equal(child.innerHTML, "My Name", "has name")
+	assert.ok(child.className.indexOf("false") > -1, "is incomplete")
+	assert.ok( !! can.data(can.$(child), 'task'), "has data")
+	assert.equal(child.innerHTML, "My Name", "has name")
 
 	task.attr({
 		completed: true,
 		name: 'New Name'
 	});
 
-	QUnit.ok(child.className.indexOf("true") !== -1, "is complete")
-	QUnit.equal(child.innerHTML, "New Name", "has new name");
+	assert.ok(child.className.indexOf("true") !== -1, "is complete")
+	assert.equal(child.innerHTML, "New Name", "has new name");
 	
 	// clear hookups b/c we are using .render;
 	can.view.hookups = {};
 
 })
 
-QUnit.test('multiple curly braces in a block', function () {
+QUnit.test('multiple curly braces in a block', function(assert) {
 	var text = '{{^obs.items}}' +
 		'<li>No items</li>' +
 		'{{/obs.items}}' +
@@ -1280,15 +1280,15 @@ QUnit.test('multiple curly braces in a block', function () {
 	var ul = document.createElement('ul');
 	ul.appendChild(can.view.frag(compiled));
 
-	QUnit.equal(ul.getElementsByTagName('li')[0].innerHTML, 'No items', 'initial observable state');
+	assert.equal(ul.getElementsByTagName('li')[0].innerHTML, 'No items', 'initial observable state');
 
 	obs.attr('items', [{
 		name: 'foo'
 	}]);
-	QUnit.equal(ul.getElementsByTagName('li')[0].innerHTML, 'foo', 'updated observable');
+	assert.equal(ul.getElementsByTagName('li')[0].innerHTML, 'foo', 'updated observable');
 });
 
-QUnit.test("unescape bindings change", function () {
+QUnit.test("unescape bindings change", function(assert) {
 	var l = new can.List([{
 		complete: true
 	}, {
@@ -1320,27 +1320,27 @@ QUnit.test("unescape bindings change", function () {
 	div.appendChild(can.view.frag(compiled));
 
 	var child = div.getElementsByTagName('div')[0];
-	QUnit.equal(child.innerHTML, "2", "at first there are 2 true bindings");
+	assert.equal(child.innerHTML, "2", "at first there are 2 true bindings");
 	var item = new can.Map({
 		complete: true,
 		id: "THIS ONE"
 	})
 	l.push(item);
 
-	QUnit.equal(child.innerHTML, "3", "now there are 3 complete");
+	assert.equal(child.innerHTML, "3", "now there are 3 complete");
 
 	item.attr('complete', false);
 
-	QUnit.equal(child.innerHTML, "2", "now there are 2 complete");
+	assert.equal(child.innerHTML, "2", "now there are 2 complete");
 
 	l.pop();
 
 	item.attr('complete', true);
 
-	QUnit.equal(child.innerHTML, "2", "there are still 2 complete");
+	assert.equal(child.innerHTML, "2", "there are still 2 complete");
 });
 
-QUnit.test("escape bindings change", function () {
+QUnit.test("escape bindings change", function(assert) {
 	var l = new can.List([{
 		complete: true
 	}, {
@@ -1372,20 +1372,20 @@ QUnit.test("escape bindings change", function () {
 	div.appendChild(can.view.frag(compiled));
 
 	var child = div.getElementsByTagName('div')[0];
-	QUnit.equal(child.innerHTML, "2", "at first there are 2 true bindings");
+	assert.equal(child.innerHTML, "2", "at first there are 2 true bindings");
 	var item = new can.Map({
 		complete: true
 	})
 	l.push(item);
 
-	QUnit.equal(child.innerHTML, "3", "now there are 3 complete");
+	assert.equal(child.innerHTML, "3", "now there are 3 complete");
 
 	item.attr('complete', false);
 
-	QUnit.equal(child.innerHTML, "2", "now there are 2 complete");
+	assert.equal(child.innerHTML, "2", "now there are 2 complete");
 });
 
-QUnit.test("tag bindings change", function () {
+QUnit.test("tag bindings change", function(assert) {
 	var l = new can.List([{
 		complete: true
 	}, {
@@ -1417,20 +1417,20 @@ QUnit.test("tag bindings change", function () {
 	div.appendChild(can.view.frag(compiled));
 
 	var child = div.getElementsByTagName('div')[0];
-	QUnit.equal(child.getAttribute("items"), "2", "at first there are 2 true bindings");
+	assert.equal(child.getAttribute("items"), "2", "at first there are 2 true bindings");
 	var item = new can.Map({
 		complete: true
 	})
 	l.push(item);
 
-	QUnit.equal(child.getAttribute("items"), "3", "now there are 3 complete");
+	assert.equal(child.getAttribute("items"), "3", "now there are 3 complete");
 
 	item.attr('complete', false);
 
-	QUnit.equal(child.getAttribute("items"), "2", "now there are 2 complete");
+	assert.equal(child.getAttribute("items"), "2", "now there are 2 complete");
 })
 
-QUnit.test("attribute value bindings change", function () {
+QUnit.test("attribute value bindings change", function(assert) {
 	var l = new can.List([{
 		complete: true
 	}, {
@@ -1462,20 +1462,20 @@ QUnit.test("attribute value bindings change", function () {
 	div.appendChild(can.view.frag(compiled));
 
 	var child = div.getElementsByTagName('div')[0];
-	QUnit.equal(child.getAttribute("items"), "2", "at first there are 2 true bindings");
+	assert.equal(child.getAttribute("items"), "2", "at first there are 2 true bindings");
 	var item = new can.Map({
 		complete: true
 	})
 	l.push(item);
 
-	QUnit.equal(child.getAttribute("items"), "3", "now there are 3 complete");
+	assert.equal(child.getAttribute("items"), "3", "now there are 3 complete");
 
 	item.attr('complete', false);
 
-	QUnit.equal(child.getAttribute("items"), "2", "now there are 2 complete");
+	assert.equal(child.getAttribute("items"), "2", "now there are 2 complete");
 })
 
-QUnit.test("in tag toggling", function () {
+QUnit.test("in tag toggling", function(assert) {
 	var text = "<div {{ obs.val }}></div>"
 
 	var obs = new can.Map({
@@ -1497,12 +1497,12 @@ QUnit.test("in tag toggling", function () {
 	obs.attr('val', 'foo="bar"')
 	var d2 = div.getElementsByTagName('div')[0];
 	// toUpperCase added to normalize cases for IE8
-	QUnit.equal(d2.getAttribute("foo"), "bar", "bar set");
-	QUnit.equal(d2.getAttribute("bar"), null, "bar set")
+	assert.equal(d2.getAttribute("foo"), "bar", "bar set");
+	assert.equal(d2.getAttribute("bar"), null, "bar set")
 });
 
 // not sure about this w/ mustache
-QUnit.test("nested properties", function () {
+QUnit.test("nested properties", function(assert) {
 
 	var text = "<div>{{ obs.name.first }}</div>"
 
@@ -1525,15 +1525,15 @@ QUnit.test("nested properties", function () {
 
 	div = div.getElementsByTagName('div')[0];
 
-	QUnit.equal(div.innerHTML, "Justin")
+	assert.equal(div.innerHTML, "Justin")
 
 	obs.attr('name.first', "Brian")
 
-	QUnit.equal(div.innerHTML, "Brian")
+	assert.equal(div.innerHTML, "Brian")
 
 });
 
-QUnit.test("tags without chidren or ending with /> do not change the state", function () {
+QUnit.test("tags without chidren or ending with /> do not change the state", function(assert) {
 
 	var text = "<table><tr><td/>{{{ obs.content }}}</tr></div>"
 	var obs = new can.Map({
@@ -1549,13 +1549,13 @@ QUnit.test("tags without chidren or ending with /> do not change the state", fun
 	var html = can.view.frag(compiled);
 	div.appendChild(html);
 
-	QUnit.equal(div.getElementsByTagName('span')
+	assert.equal(div.getElementsByTagName('span')
 		.length, 0, "there are no spans");
-	QUnit.equal(div.getElementsByTagName('td')
+	assert.equal(div.getElementsByTagName('td')
 		.length, 2, "there are 2 td");
 })
 
-QUnit.test("nested live bindings", function () {
+QUnit.test("nested live bindings", function(assert) {
 	QUnit.expect(0);
 
 	var items = new can.List([{
@@ -1582,7 +1582,7 @@ QUnit.test("nested live bindings", function () {
 	items[0].attr('is_done', true);
 });
 
-QUnit.test("list nested in observe live bindings", function () {
+QUnit.test("list nested in observe live bindings", function(assert) {
 	can.view.mustache("list-test", "<ul>{{#data.items}}<li>{{name}}</li>{{/data.items}}</ul>");
 	var data = new can.Map({
 		items: [{
@@ -1598,19 +1598,19 @@ QUnit.test("list nested in observe live bindings", function () {
 	data.items.push(new can.Map({
 		name: "Scott"
 	}))
-	QUnit.ok(/Brian/.test(div.innerHTML), "added first name")
-	QUnit.ok(/Fara/.test(div.innerHTML), "added 2nd name")
-	QUnit.ok(/Scott/.test(div.innerHTML), "added name after push")
+	assert.ok(/Brian/.test(div.innerHTML), "added first name")
+	assert.ok(/Fara/.test(div.innerHTML), "added 2nd name")
+	assert.ok(/Scott/.test(div.innerHTML), "added name after push")
 });
 
-QUnit.test("trailing text", function () {
+QUnit.test("trailing text", function(assert) {
 	can.view.mustache("count", "There are {{ length }} todos")
 	var div = document.createElement('div');
 	div.appendChild(can.view("count", new can.List([{}, {}])));
-	QUnit.ok(/There are 2 todos/.test(div.innerHTML), "got all text")
+	assert.ok(/There are 2 todos/.test(div.innerHTML), "got all text")
 })
 
-QUnit.test("recursive views", function () {
+QUnit.test("recursive views", function(assert) {
 
 	var data = new can.List([{
 		label: 'branch1',
@@ -1624,11 +1624,11 @@ QUnit.test("recursive views", function () {
 	div.appendChild(can.view(can.test.path('src/test/recursive.mustache'), {
 		items: data
 	}));
-	QUnit.ok(/class="?leaf"?/.test(div.innerHTML), "we have a leaf")
+	assert.ok(/class="?leaf"?/.test(div.innerHTML), "we have a leaf")
 
 })
 
-QUnit.test("live binding textarea", function () {
+QUnit.test("live binding textarea", function(assert) {
 	can.view.mustache("textarea-test", "<textarea>Before{{ obs.middle }}After</textarea>");
 
 	var obs = new can.Map({
@@ -1641,14 +1641,14 @@ QUnit.test("live binding textarea", function () {
 	}))
 	var textarea = div.firstChild
 
-	QUnit.equal(textarea.value, "BeforeyesAfter");
+	assert.equal(textarea.value, "BeforeyesAfter");
 
 	obs.attr("middle", "Middle")
-	QUnit.equal(textarea.value, "BeforeMiddleAfter")
+	assert.equal(textarea.value, "BeforeMiddleAfter")
 
 })
 
-QUnit.test("reading a property from a parent object when the current context is an observe", function () {
+QUnit.test("reading a property from a parent object when the current context is an observe", function(assert) {
 	can.view.mustache("parent-object", "{{#foos}}<span>{{bar}}</span>{{/foos}}")
 	var data = {
 		foos: new can.List([{
@@ -1664,15 +1664,15 @@ QUnit.test("reading a property from a parent object when the current context is 
 	div.appendChild(res);
 	var spans = div.getElementsByTagName('span');
 
-	QUnit.equal(spans.length, 2, 'Got two <span> elements');
-	QUnit.equal(spans[0].innerHTML, 'Hello World', 'First span Hello World');
-	QUnit.equal(spans[1].innerHTML, 'Hello World', 'Second span Hello World');
+	assert.equal(spans.length, 2, 'Got two <span> elements');
+	assert.equal(spans[0].innerHTML, 'Hello World', 'First span Hello World');
+	assert.equal(spans[1].innerHTML, 'Hello World', 'Second span Hello World');
 })
 
-QUnit.test("helper parameters don't convert functions", function () {
+QUnit.test("helper parameters don't convert functions", function(assert) {
 	can.Mustache.registerHelper('helperWithFn', function (fn) {
-		QUnit.ok(can.isFunction(fn), 'Parameter is a function');
-		QUnit.equal(fn(), 'Hit me!', 'Got the expected function');
+		assert.ok(can.isFunction(fn), 'Parameter is a function');
+		assert.equal(fn(), 'Hit me!', 'Got the expected function');
 	});
 
 	var renderer = can.view.mustache('{{helperWithFn test}}');
@@ -1683,10 +1683,10 @@ QUnit.test("helper parameters don't convert functions", function () {
 	});
 })
 
-QUnit.test("computes as helper parameters don't get converted", function () {
+QUnit.test("computes as helper parameters don't get converted", function(assert) {
 	can.Mustache.registerHelper('computeTest', function (no) {
-		QUnit.equal(no(), 5, 'Got computed calue');
-		QUnit.ok(no.isComputed, 'no is still a compute')
+		assert.equal(no(), 5, 'Got computed calue');
+		assert.ok(no.isComputed, 'no is still a compute')
 	});
 
 	var renderer = can.view.mustache('{{computeTest test}}');
@@ -1695,7 +1695,7 @@ QUnit.test("computes as helper parameters don't get converted", function () {
 	});
 })
 
-QUnit.test("computes are supported in default helpers", function () {
+QUnit.test("computes are supported in default helpers", function(assert) {
 
 	var staches = {
 		"if": "{{#if test}}if{{else}}else{{/if}}",
@@ -1707,7 +1707,7 @@ QUnit.test("computes are supported in default helpers", function () {
 	can.view.mustache("count", "There are {{ length }} todos")
 	var div = document.createElement('div');
 	div.appendChild(can.view("count", new can.List([{}, {}])));
-	QUnit.ok(/There are 2 todos/.test(div.innerHTML), "got all text")
+	assert.ok(/There are 2 todos/.test(div.innerHTML), "got all text")
 
 	var renderer, result, data, actual, span;
 
@@ -1725,7 +1725,7 @@ QUnit.test("computes are supported in default helpers", function () {
 		}
 		actual = div.innerHTML;
 
-		QUnit.equal(actual, result, "can.compute resolved for helper " + result);
+		assert.equal(actual, result, "can.compute resolved for helper " + result);
 	}
 
 	var inv_staches = {
@@ -1745,13 +1745,13 @@ QUnit.test("computes are supported in default helpers", function () {
 		div.appendChild(actual);
 		actual = div.innerHTML;
 
-		QUnit.equal(actual, result, "can.compute resolved for helper " + result);
+		assert.equal(actual, result, "can.compute resolved for helper " + result);
 	}
 
 });
 
 //Issue 233
-QUnit.test("multiple tbodies in table hookup", function () {
+QUnit.test("multiple tbodies in table hookup", function(assert) {
 	var text = "<table>" +
 		"{{#people}}" +
 		"<tbody><tr><td>{{name}}</td></tr></tbody>" +
@@ -1770,12 +1770,12 @@ QUnit.test("multiple tbodies in table hookup", function () {
 			});
 
 	can.append(can.$('#qunit-fixture'), can.view.frag(compiled));
-	QUnit.equal(can.$('#qunit-fixture table tbody')
+	assert.equal(can.$('#qunit-fixture table tbody')
 		.length, 2, "two tbodies");
 })
 
 // http://forum.javascriptmvc.com/topic/live-binding-on-mustache-template-does-not-seem-to-be-working-with-nested-properties
-QUnit.test("Observe with array attributes", function () {
+QUnit.test("Observe with array attributes", function(assert) {
 	var renderer = can.view.mustache('<ul>{{#todos}}<li>{{.}}</li>{{/todos}}</ul><div>{{message}}</div>');
 	var div = document.createElement('div');
 	var data = new can.Map({
@@ -1785,17 +1785,17 @@ QUnit.test("Observe with array attributes", function () {
 	});
 	div.appendChild(renderer(data));
 
-	QUnit.equal(div.getElementsByTagName('li')[1].innerHTML, 'Line #2', 'Check initial array');
-	QUnit.equal(div.getElementsByTagName('div')[0].innerHTML, 'Hello', 'Check initial message');
+	assert.equal(div.getElementsByTagName('li')[1].innerHTML, 'Line #2', 'Check initial array');
+	assert.equal(div.getElementsByTagName('div')[0].innerHTML, 'Hello', 'Check initial message');
 
 	data.attr('todos.1', 'Line #2 changed');
 	data.attr('message', 'Hello again');
 
-	QUnit.equal(div.getElementsByTagName('li')[1].innerHTML, 'Line #2 changed', 'Check updated array');
-	QUnit.equal(div.getElementsByTagName('div')[0].innerHTML, 'Hello again', 'Check updated message');
+	assert.equal(div.getElementsByTagName('li')[1].innerHTML, 'Line #2 changed', 'Check updated array');
+	assert.equal(div.getElementsByTagName('div')[0].innerHTML, 'Hello again', 'Check updated message');
 })
 
-QUnit.test("Observe list returned from the function", function () {
+QUnit.test("Observe list returned from the function", function(assert) {
 	var renderer = can.view.mustache('<ul>{{#todos}}<li>{{.}}</li>{{/todos}}</ul>');
 	var div = document.createElement('div');
 	var todos = new can.List();
@@ -1808,13 +1808,13 @@ QUnit.test("Observe list returned from the function", function () {
 
 	todos.push("Todo #1")
 
-	QUnit.equal(div.getElementsByTagName('li')
+	assert.equal(div.getElementsByTagName('li')
 		.length, 1, 'Todo is successfuly created');
-	QUnit.equal(div.getElementsByTagName('li')[0].innerHTML, 'Todo #1', 'Pushing to the list works');
+	assert.equal(div.getElementsByTagName('li')[0].innerHTML, 'Todo #1', 'Pushing to the list works');
 });
 
 // https://github.com/canjs/canjs/issues/228
-QUnit.test("Contexts within helpers not always resolved correctly", function () {
+QUnit.test("Contexts within helpers not always resolved correctly", function(assert) {
 	can.Mustache.registerHelper("bad_context", function (context, options) {
 		return "<span>" + this.text + "</span> should not be " + options.fn(context);
 	});
@@ -1830,13 +1830,13 @@ QUnit.test("Contexts within helpers not always resolved correctly", function () 
 		div = document.createElement('div');
 
 	div.appendChild(renderer(data));
-	QUnit.equal(div.getElementsByTagName('span')[0].innerHTML, "foo", 'Incorrect context passed to helper');
-	QUnit.equal(div.getElementsByTagName('span')[1].innerHTML, "bar", 'Incorrect text in helper inner template');
-	QUnit.equal(div.getElementsByTagName('span')[2].innerHTML, "In the inner context", 'Incorrect other_text in helper inner template');
+	assert.equal(div.getElementsByTagName('span')[0].innerHTML, "foo", 'Incorrect context passed to helper');
+	assert.equal(div.getElementsByTagName('span')[1].innerHTML, "bar", 'Incorrect text in helper inner template');
+	assert.equal(div.getElementsByTagName('span')[2].innerHTML, "In the inner context", 'Incorrect other_text in helper inner template');
 });
 
 // https://github.com/canjs/canjs/issues/227
-QUnit.test("Contexts are not always passed to partials properly", function () {
+QUnit.test("Contexts are not always passed to partials properly", function(assert) {
 	can.view.registerView('inner', '{{#if other_first_level}}{{other_first_level}}{{else}}{{second_level}}{{/if}}', ".mustache")
 
 	var renderer = can.view.mustache('{{#first_level}}<span>{{> inner}}</span> should equal <span>{{other_first_level}}</span>{{/first_level}}'),
@@ -1849,12 +1849,12 @@ QUnit.test("Contexts are not always passed to partials properly", function () {
 		div = document.createElement('div');
 
 	div.appendChild(renderer(data));
-	QUnit.equal(div.getElementsByTagName('span')[0].innerHTML, "foo", 'Incorrect context passed to helper');
-	QUnit.equal(div.getElementsByTagName('span')[1].innerHTML, "foo", 'Incorrect text in helper inner template');
+	assert.equal(div.getElementsByTagName('span')[0].innerHTML, "foo", 'Incorrect context passed to helper');
+	assert.equal(div.getElementsByTagName('span')[1].innerHTML, "foo", 'Incorrect text in helper inner template');
 });
 
 // https://github.com/canjs/canjs/issues/231
-QUnit.test("Functions and helpers should be passed the same context", function () {
+QUnit.test("Functions and helpers should be passed the same context", function(assert) {
 	can.Mustache.registerHelper("to_upper", function (fn/*, options*/) {
 		if (!fn.fn) {
 			return typeof fn === "function" ? fn()
@@ -1882,12 +1882,12 @@ QUnit.test("Functions and helpers should be passed the same context", function (
 	window.other_text = 'Window context';
 
 	div.appendChild(renderer(data));
-	QUnit.equal(div.getElementsByTagName('span')[0].innerHTML, data.next_level.other_text.toUpperCase(), 'Incorrect context passed to function');
-	QUnit.equal(div.getElementsByTagName('span')[1].innerHTML, data.next_level.other_text.toUpperCase(), 'Incorrect context passed to helper');
+	assert.equal(div.getElementsByTagName('span')[0].innerHTML, data.next_level.other_text.toUpperCase(), 'Incorrect context passed to function');
+	assert.equal(div.getElementsByTagName('span')[1].innerHTML, data.next_level.other_text.toUpperCase(), 'Incorrect context passed to helper');
 });
 
 // https://github.com/canjs/canjs/issues/153
-QUnit.test("Interpolated values when iterating through an Observe.List should still render when not surrounded by a DOM node", function () {
+QUnit.test("Interpolated values when iterating through an Observe.List should still render when not surrounded by a DOM node", function(assert) {
 	var renderer = can.view.mustache('{{ #todos }}{{ name }}{{ /todos }}'),
 		renderer2 = can.view.mustache('{{ #todos }}<span>{{ name }}</span>{{ /todos }}'),
 		todos = [{
@@ -1907,33 +1907,33 @@ QUnit.test("Interpolated values when iterating through an Observe.List should st
 
 	div.appendChild(renderer2(plainData));
 	
-	QUnit.equal(div.getElementsByTagName('span')[0].innerHTML, "Dishes", 'Array item rendered with DOM container');
-	QUnit.equal(div.getElementsByTagName('span')[1].innerHTML, "Forks", 'Array item rendered with DOM container');
+	assert.equal(div.getElementsByTagName('span')[0].innerHTML, "Dishes", 'Array item rendered with DOM container');
+	assert.equal(div.getElementsByTagName('span')[1].innerHTML, "Forks", 'Array item rendered with DOM container');
 
 	div = document.createElement('div')
 	div.appendChild(renderer2(liveData));
 	
-	QUnit.equal(div.getElementsByTagName('span')[0].innerHTML, "Dishes", 'List item rendered with DOM container');
-	QUnit.equal(div.getElementsByTagName('span')[1].innerHTML, "Forks", 'List item rendered with DOM container');
+	assert.equal(div.getElementsByTagName('span')[0].innerHTML, "Dishes", 'List item rendered with DOM container');
+	assert.equal(div.getElementsByTagName('span')[1].innerHTML, "Forks", 'List item rendered with DOM container');
 	
 	div = document.createElement('div');
 
 	div.appendChild(renderer(plainData));
-	QUnit.equal(div.innerHTML, "DishesForks", 'Array item rendered without DOM container');
+	assert.equal(div.innerHTML, "DishesForks", 'Array item rendered without DOM container');
 
 	div = document.createElement('div');
 
 	div.appendChild(renderer(liveData));
-	QUnit.equal(div.innerHTML, "DishesForks", 'List item rendered without DOM container');
+	assert.equal(div.innerHTML, "DishesForks", 'List item rendered without DOM container');
 
 	liveData.todos.push({
 		id: 3,
 		name: 'Knives'
 	});
-	QUnit.equal(div.innerHTML, "DishesForksKnives", 'New list item rendered without DOM container');
+	assert.equal(div.innerHTML, "DishesForksKnives", 'New list item rendered without DOM container');
 });
 
-QUnit.test("objects with a 'key' or 'index' property should work in helpers", function () {
+QUnit.test("objects with a 'key' or 'index' property should work in helpers", function(assert) {
 	var renderer = can.view.mustache('{{ #obj }}{{ show_name }}{{ /obj }}'),
 		div = document.createElement('div');
 
@@ -1948,7 +1948,7 @@ QUnit.test("objects with a 'key' or 'index' property should work in helpers", fu
 			return this.name;
 		}
 	}));
-	QUnit.equal(div.innerHTML, "Forks", 'item name rendered');
+	assert.equal(div.innerHTML, "Forks", 'item name rendered');
 
 	div.innerHTML = '';
 
@@ -1963,10 +1963,10 @@ QUnit.test("objects with a 'key' or 'index' property should work in helpers", fu
 			return this.name;
 		}
 	}));
-	QUnit.equal(div.innerHTML, "Forks", 'item name rendered');
+	assert.equal(div.innerHTML, "Forks", 'item name rendered');
 });
 
-QUnit.test("2 way binding helpers", function () {
+QUnit.test("2 way binding helpers", function(assert) {
 
 	var Value = function (el, value) {
 		this.updateElement = function (ev, newVal) {
@@ -2002,16 +2002,16 @@ QUnit.test("2 way binding helpers", function () {
 
 	var input = div.getElementsByTagName('input')[0];
 
-	QUnit.equal(input.value, "Justin", "Name is set correctly")
+	assert.equal(input.value, "Justin", "Name is set correctly")
 
 	u.attr('name', 'Eli')
 
-	QUnit.equal(input.value, "Eli", "Changing observe updates value");
+	assert.equal(input.value, "Eli", "Changing observe updates value");
 
 	input.value = "Austin";
 	input.onchange();
 
-	QUnit.equal(u.attr('name'), "Austin", "Name changed by input field");
+	assert.equal(u.attr('name'), "Austin", "Name changed by input field");
 
 	val.teardown();
 
@@ -2024,15 +2024,15 @@ QUnit.test("2 way binding helpers", function () {
 	}));
 	input = div.getElementsByTagName('input')[0];
 
-	QUnit.equal(input.value, "", "Name is set correctly")
+	assert.equal(input.value, "", "Name is set correctly")
 
 	u.attr('name', 'Eli')
 
-	QUnit.equal(input.value, "Eli", "Changing observe updates value");
+	assert.equal(input.value, "Eli", "Changing observe updates value");
 
 	input.value = "Austin";
 	input.onchange();
-	QUnit.equal(u.attr('name'), "Austin", "Name changed by input field");
+	assert.equal(u.attr('name'), "Austin", "Name changed by input field");
 	val.teardown();
 
 	// name is null
@@ -2046,20 +2046,20 @@ QUnit.test("2 way binding helpers", function () {
 	}));
 	input = div.getElementsByTagName('input')[0];
 
-	QUnit.equal(input.value, "", "Name is set correctly with null")
+	assert.equal(input.value, "", "Name is set correctly with null")
 
 	u.attr('name', 'Eli')
 
-	QUnit.equal(input.value, "Eli", "Changing observe updates value");
+	assert.equal(input.value, "Eli", "Changing observe updates value");
 
 	input.value = "Austin";
 	input.onchange();
-	QUnit.equal(u.attr('name'), "Austin", "Name changed by input field");
+	assert.equal(u.attr('name'), "Austin", "Name changed by input field");
 	val.teardown();
 
 });
 
-QUnit.test("can pass in partials", function () {
+QUnit.test("can pass in partials", function(assert) {
 	var hello = can.view(can.test.path('src/test/hello.mustache'));
 	var fancyName = can.view(can.test.path('src/test/fancy_name.mustache'));
 	var result = hello.render({
@@ -2070,10 +2070,10 @@ QUnit.test("can pass in partials", function () {
 		}
 	});
 
-	QUnit.ok(/World/.test(result.toString()), "Hello World worked");
+	assert.ok(/World/.test(result.toString()), "Hello World worked");
 });
 
-QUnit.test("can pass in helpers", function () {
+QUnit.test("can pass in helpers", function(assert) {
 	var helpers = can.view.render(can.test.path('src/test/helper.mustache'));
 	var result = helpers.render({
 		name: "world"
@@ -2085,10 +2085,10 @@ QUnit.test("can pass in helpers", function () {
 		}
 	});
 
-	QUnit.ok(/World/.test(result.toString()), "Hello World worked");
+	assert.ok(/World/.test(result.toString()), "Hello World worked");
 });
 
-QUnit.test("HTML comment with helper", function () {
+QUnit.test("HTML comment with helper", function(assert) {
 	var text = ["<ul>",
 		"{{#todos}}",
 		"<li {{data 'todo'}}>",
@@ -2124,22 +2124,22 @@ QUnit.test("HTML comment with helper", function () {
 
 	div.appendChild(can.view.frag(compiled));
 	li = div.getElementsByTagName("ul")[0].getElementsByTagName("li");
-	QUnit.equal(li.length, 1, "1 item in list");
-	QUnit.equal(comments(li[0]), 2, "2 comments in item #1");
+	assert.equal(li.length, 1, "1 item in list");
+	assert.equal(comments(li[0]), 2, "2 comments in item #1");
 
 	Todos.push({
 		id: 2,
 		name: "Laundry"
 	});
-	QUnit.equal(li.length, 2, "2 items in list");
-	QUnit.equal(comments(li[0]), 2, "2 comments in item #1");
-	QUnit.equal(comments(li[1]), 2, "2 comments in item #2");
+	assert.equal(li.length, 2, "2 items in list");
+	assert.equal(comments(li[0]), 2, "2 comments in item #1");
+	assert.equal(comments(li[1]), 2, "2 comments in item #2");
 
 	Todos.splice(0, 2);
-	QUnit.equal(li.length, 0, "0 items in list");
+	assert.equal(li.length, 0, "0 items in list");
 });
 
-QUnit.test("correctness of data-view-id and only in tag opening", function () {
+QUnit.test("correctness of data-view-id and only in tag opening", function(assert) {
 	var text = ["<textarea><select>{{#items}}",
 		"<option{{data 'item'}}>{{title}}</option>",
 		"{{/items}}</select></textarea>"
@@ -2160,13 +2160,13 @@ QUnit.test("correctness of data-view-id and only in tag opening", function () {
 		expected = "^<textarea data-view-id='[0-9]+'><select><option data-view-id='[0-9]+'>One</option>" +
 			"<option data-view-id='[0-9]+'>Two</option></select></textarea>$";
 
-	QUnit.ok(compiled.search(expected) === 0, "Rendered output is as expected");
+	assert.ok(compiled.search(expected) === 0, "Rendered output is as expected");
 	
 	// clear hookups b/c we are using .render;
 	can.view.hookups = {};
 });
 
-QUnit.test("Empty strings in arrays within Observes that are iterated should return blank strings", function () {
+QUnit.test("Empty strings in arrays within Observes that are iterated should return blank strings", function(assert) {
 	var data = new can.Map({
 		colors: ["", 'red', 'green', 'blue']
 	}),
@@ -2177,10 +2177,10 @@ QUnit.test("Empty strings in arrays within Observes that are iterated should ret
 		div = document.createElement('div');
 
 	div.appendChild(can.view.frag(compiled));
-	QUnit.equal(div.getElementsByTagName('option')[0].innerHTML, "", "Blank string should return blank");
+	assert.equal(div.getElementsByTagName('option')[0].innerHTML, "", "Blank string should return blank");
 });
 
-QUnit.test("Null properties do not throw errors in Mustache.get", function () {
+QUnit.test("Null properties do not throw errors in Mustache.get", function(assert) {
 	var renderer = can.view.mustache("Foo bar {{#foo.bar}}exists{{/foo.bar}}{{^foo.bar}}does not exist{{/foo.bar}}"),
 		div = document.createElement('div'),
 		div2 = document.createElement('div'),
@@ -2191,7 +2191,7 @@ QUnit.test("Null properties do not throw errors in Mustache.get", function () {
 			foo: null
 		}))
 	} catch (e) {
-		QUnit.ok(false, "rendering with null threw an error");
+		assert.ok(false, "rendering with null threw an error");
 	}
 	frag2 = renderer(new can.Map({
 		foo: {
@@ -2200,12 +2200,12 @@ QUnit.test("Null properties do not throw errors in Mustache.get", function () {
 	}))
 	div.appendChild(frag);
 	div2.appendChild(frag2);
-	QUnit.equal(div.innerHTML, "Foo bar does not exist");
-	QUnit.equal(div2.innerHTML, "Foo bar exists");
+	assert.equal(div.innerHTML, "Foo bar does not exist");
+	assert.equal(div2.innerHTML, "Foo bar exists");
 });
 
 // Issue #288
-QUnit.test("Data helper should set proper data instead of a context stack", function () {
+QUnit.test("Data helper should set proper data instead of a context stack", function(assert) {
 	var partials = {
 		'nested_data': '<span id="has_data" {{data "attr"}}></span>',
 		'nested_data2': '{{#this}}<span id="has_data" {{data "attr"}}></span>{{/this}}',
@@ -2228,21 +2228,21 @@ QUnit.test("Data helper should set proper data instead of a context stack", func
 	div.innerHTML = '';
 	div.appendChild(renderer(data));
 	span = can.$(div.getElementsByTagName('span')[0]);
-	QUnit.strictEqual(can.data(span, 'attr'), data.bar, 'Nested data 1 should have correct data');
+	assert.strictEqual(can.data(span, 'attr'), data.bar, 'Nested data 1 should have correct data');
 
 	div.innerHTML = '';
 	div.appendChild(renderer2(data));
 	span = can.$(div.getElementsByTagName('span')[0]);
-	QUnit.strictEqual(can.data(span, 'attr'), data.bar, 'Nested data 2 should have correct data');
+	assert.strictEqual(can.data(span, 'attr'), data.bar, 'Nested data 2 should have correct data');
 
 	div.innerHTML = '';
 	div.appendChild(renderer3(data));
 	span = can.$(div.getElementsByTagName('span')[0]);
-	QUnit.strictEqual(can.data(span, 'attr'), data.bar, 'Nested data 3 should have correct data');
+	assert.strictEqual(can.data(span, 'attr'), data.bar, 'Nested data 3 should have correct data');
 });
 
 // Issue #333
-QUnit.test("Functions passed to default helpers should be evaluated", function () {
+QUnit.test("Functions passed to default helpers should be evaluated", function(assert) {
 	var renderer = can.view.mustache("{{#if hasDucks}}Ducks: {{ducks}}{{else}}No ducks!{{/if}}"),
 		div = document.createElement('div'),
 		data = new can.Map({
@@ -2258,10 +2258,10 @@ QUnit.test("Functions passed to default helpers should be evaluated", function (
 	div.innerHTML = '';
 	div.appendChild(renderer(data));
 	span = can.$(div.getElementsByTagName('span')[0]);
-	QUnit.equal(div.innerHTML, 'No ducks!', 'The function evaluated should evaluate false');
+	assert.equal(div.innerHTML, 'No ducks!', 'The function evaluated should evaluate false');
 });
 
-QUnit.test("avoid global helpers", function () {
+QUnit.test("avoid global helpers", function(assert) {
 	var noglobals = can.view.mustache("{{sometext person.name}}");
 
 	var div = document.createElement('div'),
@@ -2291,11 +2291,11 @@ QUnit.test("avoid global helpers", function () {
 
 	person.attr("name", "Ajax")
 
-	QUnit.equal(div.innerHTML, "Mr. Ajax");
-	QUnit.equal(div2.innerHTML, "Ajax rules");
+	assert.equal(div.innerHTML, "Mr. Ajax");
+	assert.equal(div2.innerHTML, "Ajax rules");
 });
 
-QUnit.test("Helpers always have priority (#258)", function () {
+QUnit.test("Helpers always have priority (#258)", function(assert) {
 	can.Mustache.registerHelper('callMe', function (arg) {
 		return arg + ' called me!';
 	});
@@ -2312,15 +2312,15 @@ QUnit.test("Helpers always have priority (#258)", function () {
 
 	var expected = t.expected.replace(/&quot;/g, '&#34;')
 		.replace(/\r\n/g, '\n');
-	QUnit.deepEqual(new can.Mustache({
+	assert.deepEqual(new can.Mustache({
 			text: t.template
 		})
 		.render(t.data), expected);
 });
 
 if (typeof steal !== 'undefined') {
-	QUnit.test("avoid global helpers", function () {
-		QUnit.stop();
+	QUnit.test("avoid global helpers", function(assert) {
+		var done = assert.async();
 		steal('src/test/noglobals.mustache!', function (noglobals) {
 			var div = document.createElement('div'),
 				div2 = document.createElement('div');
@@ -2346,14 +2346,14 @@ if (typeof steal !== 'undefined') {
 
 			person.attr("name", "Ajax")
 
-			QUnit.equal(div.innerHTML, "Mr. Ajax");
-			QUnit.equal(div2.innerHTML, "Ajax rules");
-			QUnit.start();
+			assert.equal(div.innerHTML, "Mr. Ajax");
+			assert.equal(div2.innerHTML, "Ajax rules");
+			done();
 		});
 	});
 }
 
-QUnit.test("Each does not redraw items", function () {
+QUnit.test("Each does not redraw items", function(assert) {
 
 	var animals = new can.List(['sloth', 'bear']),
 		renderer = can.view.mustache("<div>my<b>favorite</b>animals:{{#each animals}}<label>Animal=</label> <span>{{this}}</span>{{/}}!</div>");
@@ -2368,18 +2368,18 @@ QUnit.test("Each does not redraw items", function () {
 	div.getElementsByTagName('label')[0].myexpando = "EXPANDO-ED";
 
 	//animals.push("dog")
-	QUnit.equal(div.getElementsByTagName('label')
+	assert.equal(div.getElementsByTagName('label')
 		.length, 2, "There are 2 labels")
 
 	animals.push("turtle")
 
-	QUnit.equal(div.getElementsByTagName('label')[0].myexpando, "EXPANDO-ED", "same expando");
+	assert.equal(div.getElementsByTagName('label')[0].myexpando, "EXPANDO-ED", "same expando");
 
-	QUnit.equal(div.getElementsByTagName('span')[2].innerHTML, "turtle", "turtle added");
+	assert.equal(div.getElementsByTagName('span')[2].innerHTML, "turtle", "turtle added");
 
 });
 
-QUnit.test("Each works with the empty list", function () {
+QUnit.test("Each works with the empty list", function(assert) {
 
 	var animals = new can.List([]),
 		renderer = can.view.mustache("<div>my<b>favorite</b>animals:{{#each animals}}<label>Animal=</label> <span>{{this}}</span>{{/}}!</div>");
@@ -2394,16 +2394,16 @@ QUnit.test("Each works with the empty list", function () {
 	animals.push('sloth', 'bear')
 
 	//animals.push("dog")
-	QUnit.equal(div.getElementsByTagName('label')
+	assert.equal(div.getElementsByTagName('label')
 		.length, 2, "There are 2 labels")
 
 	animals.push("turtle")
 
-	QUnit.equal(div.getElementsByTagName('span')[2].innerHTML, "turtle", "turtle added");
+	assert.equal(div.getElementsByTagName('span')[2].innerHTML, "turtle", "turtle added");
 
 });
 
-QUnit.test("each works within another branch", function () {
+QUnit.test("each works within another branch", function(assert) {
 	var animals = new can.List([]),
 		template = "<div>Animals:" +
 			"{{#if animals.length}}~" +
@@ -2424,20 +2424,20 @@ QUnit.test("each works within another branch", function () {
 	});
 	div.appendChild(frag)
 
-	QUnit.equal(div.getElementsByTagName('div')[0].innerHTML, "Animals:No animals!");
+	assert.equal(div.getElementsByTagName('div')[0].innerHTML, "Animals:No animals!");
 	animals.push('sloth');
 
-	QUnit.equal(div.getElementsByTagName('span')
+	assert.equal(div.getElementsByTagName('span')
 		.length, 1, "There is 1 sloth");
 	animals.pop();
 
-	QUnit.equal(div.getElementsByTagName('div')[0].innerHTML, "Animals:No animals!");
+	assert.equal(div.getElementsByTagName('div')[0].innerHTML, "Animals:No animals!");
 });
 
-QUnit.test("a compute gets passed to a plugin", function () {
+QUnit.test("a compute gets passed to a plugin", function(assert) {
 
 	can.Mustache.registerHelper('iamhungryforcomputes', function (value) {
-		QUnit.ok(value.isComputed, "value is a compute")
+		assert.ok(value.isComputed, "value is a compute")
 		return function (/*el*/) {
 
 		}
@@ -2456,7 +2456,7 @@ QUnit.test("a compute gets passed to a plugin", function () {
 
 });
 
-QUnit.test("Object references can escape periods for key names containing periods", function () {
+QUnit.test("Object references can escape periods for key names containing periods", function(assert) {
 	var template = can.view.mustache("{{#foo.bar}}" +
 		"{{some\\\\.key\\\\.name}} {{some\\\\.other\\\\.key.with\\\\.more}}" +
 		"{{/foo.bar}}"),
@@ -2474,10 +2474,10 @@ QUnit.test("Object references can escape periods for key names containing period
 	var div = document.createElement('div');
 	div.appendChild(template(data))
 
-	QUnit.equal(div.innerHTML, "100 values");
+	assert.equal(div.innerHTML, "100 values");
 })
 
-QUnit.test("Computes should be resolved prior to accessing attributes", function () {
+QUnit.test("Computes should be resolved prior to accessing attributes", function(assert) {
 	var template = can.view.mustache("{{list.length}}"),
 		data = {
 			list: can.compute(new can.List())
@@ -2486,10 +2486,10 @@ QUnit.test("Computes should be resolved prior to accessing attributes", function
 	var div = document.createElement('div');
 	div.appendChild(template(data))
 
-	QUnit.equal(div.innerHTML, "0");
+	assert.equal(div.innerHTML, "0");
 })
 
-QUnit.test("Helpers can be passed . or this for the active context", function () {
+QUnit.test("Helpers can be passed . or this for the active context", function(assert) {
 	can.Mustache.registerHelper('rsvp', function (attendee, event) {
 		return attendee.name + ' is attending ' + event.name;
 	});
@@ -2509,17 +2509,17 @@ QUnit.test("Helpers can be passed . or this for the active context", function ()
 	div.appendChild(template(data));
 	var children = div.getElementsByTagName('div');
 
-	QUnit.equal(children[0].innerHTML, 'Justin is attending Reception');
-	QUnit.equal(children[1].innerHTML, 'Justin is attending Wedding');
+	assert.equal(children[0].innerHTML, 'Justin is attending Reception');
+	assert.equal(children[1].innerHTML, 'Justin is attending Wedding');
 });
 
-QUnit.test("helpers only called once (#477)", function () {
+QUnit.test("helpers only called once (#477)", function(assert) {
 
 	var callCount = 0;
 
 	Mustache.registerHelper("foo", function (/*text*/) {
 		callCount++;
-		QUnit.equal(callCount, 1, "call count is only ever one")
+		assert.equal(callCount, 1, "call count is only ever one")
 		return "result";
 	});
 
@@ -2535,11 +2535,11 @@ QUnit.test("helpers only called once (#477)", function () {
 
 });
 
-QUnit.test("helpers between tags (#469)", function () {
+QUnit.test("helpers between tags (#469)", function(assert) {
 
 	can.Mustache.registerHelper("items", function () {
 		return function (li) {
-			QUnit.equal(li.nodeName.toLowerCase(), "li", "right node name")
+			assert.equal(li.nodeName.toLowerCase(), "li", "right node name")
 		}
 	});
 
@@ -2547,7 +2547,7 @@ QUnit.test("helpers between tags (#469)", function () {
 	template();
 })
 
-QUnit.test("hiding image srcs (#157)", function () {
+QUnit.test("hiding image srcs (#157)", function(assert) {
 	var template = can.view.mustache('<img {{#image}}src="{{.}}"{{/image}} alt="An image" />'),
 		data = new can.Map({
 			image: null
@@ -2557,11 +2557,11 @@ QUnit.test("hiding image srcs (#157)", function () {
 	var frag = template(data),
 		img = frag.childNodes[0];
 
-	QUnit.equal(img.src, "", "there is no src");
+	assert.equal(img.src, "", "there is no src");
 
 	data.attr("image", url)
-	QUnit.notEqual(img.src, "", 'Image should have src')
-	QUnit.equal(img.src, url, "images src is correct");
+	assert.notEqual(img.src, "", 'Image should have src')
+	assert.equal(img.src, url, "images src is correct");
 
 	/*var renderer = can.view.mustache('<img {{#image}}src="{{.}}"{{/image}} alt="An image" />{{image}}'),
 	 url = 'http://farm8.staticflickr.com/7102/6999583228_99302b91ac_n.jpg',
@@ -2574,15 +2574,15 @@ QUnit.test("hiding image srcs (#157)", function () {
 	 div.appendChild(renderer(data));
 
 	 var img = div.getElementsByTagName('img')[0];
-	 QUnit.equal(img.src, "", 'Image should not have src');
+	 assert.equal(img.src, "", 'Image should not have src');
 
 	 data.attr('messages', 5);
 	 data.attr('image', url);
-	 QUnit.notEqual(img.src, "", 'Image should have src');
-	 QUnit.equal(img.src, url, 'Image should have src URL');*/
+	 assert.notEqual(img.src, "", 'Image should have src');
+	 assert.equal(img.src, url, 'Image should have src URL');*/
 });
 
-QUnit.test("live binding in a truthy section", function () {
+QUnit.test("live binding in a truthy section", function(assert) {
 	var template = can.view.mustache('<div {{#width}}width="{{.}}"{{/width}}></div>'),
 		data = new can.Map({
 			width: '100'
@@ -2591,14 +2591,14 @@ QUnit.test("live binding in a truthy section", function () {
 	var frag = template(data),
 		img = frag.childNodes[0];
 
-	QUnit.equal(img.getAttribute("width"), "100", "initial width is correct");
+	assert.equal(img.getAttribute("width"), "100", "initial width is correct");
 
 	data.attr("width", "300")
-	QUnit.equal(img.getAttribute('width'), "300", "updated width is correct");
+	assert.equal(img.getAttribute('width'), "300", "updated width is correct");
 
 });
 
-QUnit.test("backtracks in mustache (#163)", function () {
+QUnit.test("backtracks in mustache (#163)", function(assert) {
 
 	var template = can.view.mustache(
 		"{{#grid.rows}}" +
@@ -2631,29 +2631,29 @@ QUnit.test("backtracks in mustache (#163)", function () {
 	});
 
 	var divs = frag.childNodes;
-	QUnit.equal(divs.length, 4, "there are 4 divs");
+	assert.equal(divs.length, 4, "there are 4 divs");
 
 	var vals = can.map(divs, function (div) {
 		return div.innerHTML
 	});
 
-	QUnit.deepEqual(vals, ["Justin", "Meyer", "Brian", "Moschel"], "div values are the same");
+	assert.deepEqual(vals, ["Justin", "Meyer", "Brian", "Moschel"], "div values are the same");
 
 })
 
-QUnit.test("support null and undefined as an argument", function () {
+QUnit.test("support null and undefined as an argument", function(assert) {
 
 	var template = can.view.mustache("{{aHelper null undefined}}")
 
 	template({}, {
 		aHelper: function (arg1, arg2) {
-			QUnit.ok(arg1 === null);
-			QUnit.ok(arg2 === undefined)
+			assert.ok(arg1 === null);
+			assert.ok(arg2 === undefined)
 		}
 	});
 });
 
-QUnit.test("passing can.List to helper (#438)", function () {
+QUnit.test("passing can.List to helper (#438)", function(assert) {
 	var renderer = can.view.mustache('<ul><li {{helper438 observeList}}>observeList broken</li>' +
 		'<li {{helper438 array}}>plain arrays work</li></ul>')
 
@@ -2681,11 +2681,11 @@ QUnit.test("passing can.List to helper (#438)", function () {
 
 	var ul = div.children[0];
 
-	QUnit.equal(ul.children[0].innerHTML, 'Helper called', 'Helper called');
-	QUnit.equal(ul.children[1].innerHTML, 'Helper called', 'Helper called');
+	assert.equal(ul.children[0].innerHTML, 'Helper called', 'Helper called');
+	assert.equal(ul.children[1].innerHTML, 'Helper called', 'Helper called');
 });
 
-QUnit.test("hiding image srcs (#494)", function () {
+QUnit.test("hiding image srcs (#494)", function(assert) {
 	var template = can.view.mustache('<img src="{{image}}"/>'),
 		data = new can.Map({
 			image: ""
@@ -2694,22 +2694,22 @@ QUnit.test("hiding image srcs (#494)", function () {
 
 	var str = template.render(data);
 
-	QUnit.ok(str.indexOf('__!!__') === -1, "no __!!___ " + str)
+	assert.ok(str.indexOf('__!!__') === -1, "no __!!___ " + str)
 
 	var frag = template(data),
 		img = frag.childNodes[0];
 
-	QUnit.equal(img.src, "", "there is no src");
+	assert.equal(img.src, "", "there is no src");
 
 	data.attr("image", url);
-	QUnit.notEqual(img.src, "", 'Image should have src');
-	QUnit.equal(img.src, url, "images src is correct");
+	assert.notEqual(img.src, "", 'Image should have src');
+	assert.equal(img.src, url, "images src is correct");
 	
 	// clear hookups b/c we are using .render;
 	can.view.hookups = {};
 });
 
-QUnit.test("hiding image srcs with complex content (#494)", function () {
+QUnit.test("hiding image srcs with complex content (#494)", function(assert) {
 	var template = can.view.mustache('<img src="{{#image}}http://{{domain}}/{{loc}}.png{{/image}}"/>'),
 		data = new can.Map({}),
 		imgData = {
@@ -2720,22 +2720,22 @@ QUnit.test("hiding image srcs with complex content (#494)", function () {
 
 	var str = template.render(data);
 
-	QUnit.ok(str.indexOf('__!!__') === -1, "no __!!__")
+	assert.ok(str.indexOf('__!!__') === -1, "no __!!__")
 
 	var frag = template(data),
 		img = frag.childNodes[0];
 
-	QUnit.equal(img.src, "", "there is no src");
+	assert.equal(img.src, "", "there is no src");
 
 	data.attr("image", imgData);
-	QUnit.notEqual(img.src, "", 'Image should have src');
-	QUnit.equal(img.src, url, "images src is correct");
+	assert.notEqual(img.src, "", 'Image should have src');
+	assert.equal(img.src, url, "images src is correct");
 	
 	// clear hookups b/c we are using .render;
 	can.view.hookups = {};
 });
 
-QUnit.test("style property is live-bindable in IE (#494)", 4, function () {
+QUnit.test("style property is live-bindable in IE (#494)", 4, function(assert) {
 
 	var template = can.view.mustache('<div style="width: {{width}}px; background-color: {{color}};">hi</div>')
 
@@ -2747,17 +2747,17 @@ QUnit.test("style property is live-bindable in IE (#494)", 4, function () {
 	var div = template(dims)
 		.childNodes[0]
 
-	QUnit.equal(div.style.width, "5px");
-	QUnit.equal(div.style.backgroundColor, "red");
+	assert.equal(div.style.width, "5px");
+	assert.equal(div.style.backgroundColor, "red");
 
 	dims.attr("width", 10);
 	dims.attr('color', 'blue');
 
-	QUnit.equal(div.style.width, "10px");
-	QUnit.equal(div.style.backgroundColor, "blue");
+	assert.equal(div.style.width, "10px");
+	assert.equal(div.style.backgroundColor, "blue");
 });
 
-QUnit.test("empty lists update", 2, function () {
+QUnit.test("empty lists update", 2, function(assert) {
 	var template = can.view.mustache('<p>{{#list}}{{.}}{{/list}}</p>');
 	var map = new can.Map({
 		list: ['something']
@@ -2768,12 +2768,12 @@ QUnit.test("empty lists update", 2, function () {
 
 	div.appendChild(frag);
 
-	QUnit.equal(div.children[0].innerHTML, 'something', 'initial list content set');
+	assert.equal(div.children[0].innerHTML, 'something', 'initial list content set');
 	map.attr('list', ['one', 'two']);
-	QUnit.equal(div.children[0].innerHTML, 'onetwo', 'updated list content set');
+	assert.equal(div.children[0].innerHTML, 'onetwo', 'updated list content set');
 });
 
-QUnit.test("attributes in truthy section", function () {
+QUnit.test("attributes in truthy section", function(assert) {
 	var template = can.view.mustache('<p {{#attribute}}data-test="{{attribute}}"{{/attribute}}></p>');
 	var data1 = {
 		attribute: "test-value"
@@ -2782,7 +2782,7 @@ QUnit.test("attributes in truthy section", function () {
 	var div1 = document.createElement('div');
 
 	div1.appendChild(frag1);
-	QUnit.equal(div1.children[0].getAttribute('data-test'), 'test-value', 'hyphenated attribute value');
+	assert.equal(div1.children[0].getAttribute('data-test'), 'test-value', 'hyphenated attribute value');
 
 	var data2 = {
 		attribute: "test value"
@@ -2791,10 +2791,10 @@ QUnit.test("attributes in truthy section", function () {
 	var div2 = document.createElement('div');
 
 	div2.appendChild(frag2);
-	QUnit.equal(div2.children[0].getAttribute('data-test'), 'test value', 'whitespace in attribute value');
+	assert.equal(div2.children[0].getAttribute('data-test'), 'test value', 'whitespace in attribute value');
 });
 
-QUnit.test("live bound attributes with no '='", function () {
+QUnit.test("live bound attributes with no '='", function(assert) {
 	var template = can.view.mustache('<input type="radio" {{#selected}}checked{{/selected}}>');
 	var data = new can.Map({
 		selected: false
@@ -2804,13 +2804,13 @@ QUnit.test("live bound attributes with no '='", function () {
 
 	div.appendChild(frag);
 	data.attr('selected', true);
-	QUnit.equal(div.children[0].checked, true, 'hyphenated attribute value');
+	assert.equal(div.children[0].checked, true, 'hyphenated attribute value');
 
 	data.attr("selected", false)
-	QUnit.equal(div.children[0].checked, false, 'hyphenated attribute value');
+	assert.equal(div.children[0].checked, false, 'hyphenated attribute value');
 });
 
-QUnit.test("outputting array of attributes", function () {
+QUnit.test("outputting array of attributes", function(assert) {
 	var template = can.view.mustache('<p {{#attribute}}{{name}}="{{value}}"{{/attribute}}></p>');
 	var data = {
 		attribute: [{
@@ -2828,12 +2828,12 @@ QUnit.test("outputting array of attributes", function () {
 	var div = document.createElement('div');
 
 	div.appendChild(frag);
-	QUnit.equal(div.children[0].getAttribute('data-test1'), 'value1', 'first value');
-	QUnit.equal(div.children[0].getAttribute('data-test2'), 'value2', 'second value');
-	QUnit.equal(div.children[0].getAttribute('data-test3'), 'value3', 'third value');
+	assert.equal(div.children[0].getAttribute('data-test1'), 'value1', 'first value');
+	assert.equal(div.children[0].getAttribute('data-test2'), 'value2', 'second value');
+	assert.equal(div.children[0].getAttribute('data-test3'), 'value3', 'third value');
 });
 
-QUnit.test("incremental updating of #each within an if", function () {
+QUnit.test("incremental updating of #each within an if", function(assert) {
 	var template = can.view.mustache('{{#if items.length}}<ul>{{#each items}}<li/>{{/each}}</ul>{{/if}}');
 
 	var items = new can.List([{}, {}]);
@@ -2846,11 +2846,11 @@ QUnit.test("incremental updating of #each within an if", function () {
 	ul.setAttribute("original", "yup");
 
 	items.push({});
-	QUnit.ok(ul === div.getElementsByTagName('ul')[0], "ul is still the same")
+	assert.ok(ul === div.getElementsByTagName('ul')[0], "ul is still the same")
 
 });
 
-QUnit.test("can.mustache.safeString", function () {
+QUnit.test("can.mustache.safeString", function(assert) {
 	var text = "Google",
 		url = "http://google.com/",
 		templateEscape = can.view.mustache('{{link "' + text + '" "' + url + '"}}'),
@@ -2863,21 +2863,21 @@ QUnit.test("can.mustache.safeString", function () {
 	var div = document.createElement('div');
 	div.appendChild(templateEscape({}));
 
-	QUnit.equal(div.children.length, 1, 'rendered a DOM node');
-	QUnit.equal(div.children[0].nodeName, 'A', 'rendered an anchor tag');
-	QUnit.equal(div.children[0].innerHTML, text, 'rendered the text properly');
-	QUnit.equal(div.children[0].getAttribute('href'), url, 'rendered the href properly');
+	assert.equal(div.children.length, 1, 'rendered a DOM node');
+	assert.equal(div.children[0].nodeName, 'A', 'rendered an anchor tag');
+	assert.equal(div.children[0].innerHTML, text, 'rendered the text properly');
+	assert.equal(div.children[0].getAttribute('href'), url, 'rendered the href properly');
 
 	div = document.createElement('div');
 	div.appendChild(templateUnescape({}));
 
-	QUnit.equal(div.children.length, 1, 'rendered a DOM node');
-	QUnit.equal(div.children[0].nodeName, 'A', 'rendered an anchor tag');
-	QUnit.equal(div.children[0].innerHTML, text, 'rendered the text properly');
-	QUnit.equal(div.children[0].getAttribute('href'), url, 'rendered the href properly');
+	assert.equal(div.children.length, 1, 'rendered a DOM node');
+	assert.equal(div.children[0].nodeName, 'A', 'rendered an anchor tag');
+	assert.equal(div.children[0].innerHTML, text, 'rendered the text properly');
+	assert.equal(div.children[0].getAttribute('href'), url, 'rendered the href properly');
 });
 
-QUnit.test("changing the list works with each", function () {
+QUnit.test("changing the list works with each", function(assert) {
 	var template = can.view.mustache("<ul>{{#each list}}<li>.</li>{{/each}}</ul>");
 
 	var map = new can.Map({
@@ -2887,15 +2887,15 @@ QUnit.test("changing the list works with each", function () {
 	var lis = template(map)
 		.childNodes[0].getElementsByTagName('li');
 
-	QUnit.equal(lis.length, 1, "one li")
+	assert.equal(lis.length, 1, "one li")
 
 	map.attr("list", new can.List(["bar", "car"]));
 
-	QUnit.equal(lis.length, 2, "two lis")
+	assert.equal(lis.length, 2, "two lis")
 
 });
 
-QUnit.test("nested properties binding (#525)", function () {
+QUnit.test("nested properties binding (#525)", function(assert) {
 	var template = can.view.mustache("<label>{{name.first}}</label>");
 
 	var me = new can.Map()
@@ -2905,12 +2905,12 @@ QUnit.test("nested properties binding (#525)", function () {
 	me.attr("name", {
 		first: "Justin"
 	});
-	QUnit.equal(label.innerHTML, "Justin", "set name object");
+	assert.equal(label.innerHTML, "Justin", "set name object");
 
 	me.attr("name", {
 		first: "Brian"
 	});
-	QUnit.equal(label.innerHTML, "Brian", "merged name object");
+	assert.equal(label.innerHTML, "Brian", "merged name object");
 
 	me.removeAttr("name");
 	me.attr({
@@ -2919,11 +2919,11 @@ QUnit.test("nested properties binding (#525)", function () {
 		}
 	});
 
-	QUnit.equal(label.innerHTML, "Payal", "works after parent removed");
+	assert.equal(label.innerHTML, "Payal", "works after parent removed");
 
 })
 
-QUnit.test("Rendering indicies of an array with @index", function () {
+QUnit.test("Rendering indicies of an array with @index", function(assert) {
 	var template = can.view.mustache("<ul>{{#each list}}<li>{{@index}} {{.}}</li>{{/each}}</ul>");
 	var list = [0, 1, 2, 3];
 
@@ -2933,11 +2933,11 @@ QUnit.test("Rendering indicies of an array with @index", function () {
 		.childNodes[0].getElementsByTagName('li');
 
 	for (var i = 0; i < lis.length; i++) {
-		QUnit.equal(lis[i].innerHTML, (i + ' ' + i), 'rendered index and value are correct');
+		assert.equal(lis[i].innerHTML, (i + ' ' + i), 'rendered index and value are correct');
 	}
 });
 
-QUnit.test("Rendering indicies of an array with @index + offset (#1078)", function () {
+QUnit.test("Rendering indicies of an array with @index + offset (#1078)", function(assert) {
 	var template = can.view.mustache("<ul>{{#each list}}<li>{{@index 5}} {{.}}</li>{{/each}}</ul>");
 	var list = [0, 1, 2, 3];
 
@@ -2947,11 +2947,11 @@ QUnit.test("Rendering indicies of an array with @index + offset (#1078)", functi
 		.childNodes[0].getElementsByTagName('li');
 
 	for (var i = 0; i < lis.length; i++) {
-		QUnit.equal(lis[i].innerHTML, (i+5 + ' ' + i), 'rendered index and value are correct');
+		assert.equal(lis[i].innerHTML, (i+5 + ' ' + i), 'rendered index and value are correct');
 	}
 });
 
-QUnit.test("Passing indices into helpers as values", function () {
+QUnit.test("Passing indices into helpers as values", function(assert) {
 	var template = can.view.mustache("<ul>{{#each list}}<li>{{test @index}} {{.}}</li>{{/each}}</ul>");
 	var list = [0, 1, 2, 3];
 
@@ -2964,11 +2964,11 @@ QUnit.test("Passing indices into helpers as values", function () {
 	}).childNodes[0].getElementsByTagName('li');
 
 	for (var i = 0; i < lis.length; i++) {
-		QUnit.equal(lis[i].innerHTML, (i + ' ' + i), 'rendered index and value are correct');
+		assert.equal(lis[i].innerHTML, (i + ' ' + i), 'rendered index and value are correct');
 	}
 });
 
-QUnit.test("Rendering live bound indicies with #each, @index and a simple can.List", function () {
+QUnit.test("Rendering live bound indicies with #each, @index and a simple can.List", function(assert) {
 	var list = new can.List(['a', 'b', 'c']);
 	var template = can.view.mustache("<ul>{{#each list}}<li>{{@index}} {{.}}</li>{{/each}}</ul>");
 
@@ -2977,40 +2977,40 @@ QUnit.test("Rendering live bound indicies with #each, @index and a simple can.Li
 	})
 		.childNodes[0].getElementsByTagName('li');
 
-	QUnit.equal(lis.length, 3, "three lis");
+	assert.equal(lis.length, 3, "three lis");
 
-	QUnit.equal(lis[0].innerHTML, '0 a', "first index and value are correct");
-	QUnit.equal(lis[1].innerHTML, '1 b', "second index and value are correct");
-	QUnit.equal(lis[2].innerHTML, '2 c', "third index and value are correct");
+	assert.equal(lis[0].innerHTML, '0 a', "first index and value are correct");
+	assert.equal(lis[1].innerHTML, '1 b', "second index and value are correct");
+	assert.equal(lis[2].innerHTML, '2 c', "third index and value are correct");
 
 	// add a few more items
 	list.push('d', 'e');
 
-	QUnit.equal(lis.length, 5, "five lis");
+	assert.equal(lis.length, 5, "five lis");
 
-	QUnit.equal(lis[3].innerHTML, '3 d', "fourth index and value are correct");
-	QUnit.equal(lis[4].innerHTML, '4 e', "fifth index and value are correct");
+	assert.equal(lis[3].innerHTML, '3 d', "fourth index and value are correct");
+	assert.equal(lis[4].innerHTML, '4 e', "fifth index and value are correct");
 
 	// splice off a few items and add some more
 	list.splice(0, 2, 'z', 'y');
 
-	QUnit.equal(lis.length, 5, "five lis");
-	QUnit.equal(lis[0].innerHTML, '0 z', "first item updated");
-	QUnit.equal(lis[1].innerHTML, '1 y', "second item udpated");
-	QUnit.equal(lis[2].innerHTML, '2 c', "third item the same");
-	QUnit.equal(lis[3].innerHTML, '3 d', "fourth item the same");
-	QUnit.equal(lis[4].innerHTML, '4 e', "fifth item the same");
+	assert.equal(lis.length, 5, "five lis");
+	assert.equal(lis[0].innerHTML, '0 z', "first item updated");
+	assert.equal(lis[1].innerHTML, '1 y', "second item udpated");
+	assert.equal(lis[2].innerHTML, '2 c', "third item the same");
+	assert.equal(lis[3].innerHTML, '3 d', "fourth item the same");
+	assert.equal(lis[4].innerHTML, '4 e', "fifth item the same");
 
 	// splice off from the middle
 	list.splice(2, 2);
 
-	QUnit.equal(lis.length, 3, "three lis");
-	QUnit.equal(lis[0].innerHTML, '0 z', "first item the same");
-	QUnit.equal(lis[1].innerHTML, '1 y', "second item the same");
-	QUnit.equal(lis[2].innerHTML, '2 e', "fifth item now the 3rd item");
+	assert.equal(lis.length, 3, "three lis");
+	assert.equal(lis[0].innerHTML, '0 z', "first item the same");
+	assert.equal(lis[1].innerHTML, '1 y', "second item the same");
+	assert.equal(lis[2].innerHTML, '2 e', "fifth item now the 3rd item");
 });
 
-QUnit.test('Rendering keys of an object with #each and @key', function () {
+QUnit.test('Rendering keys of an object with #each and @key', function(assert) {
 	delete can.Mustache._helpers.too;
 	var template = can.view.mustache("<ul>{{#each obj}}<li>{{@key}} {{.}}</li>{{/each}}</ul>");
 	var obj = {
@@ -3024,14 +3024,14 @@ QUnit.test('Rendering keys of an object with #each and @key', function () {
 	})
 		.childNodes[0].getElementsByTagName('li');
 
-	QUnit.equal(lis.length, 3, "three lis");
+	assert.equal(lis.length, 3, "three lis");
 
-	QUnit.equal(lis[0].innerHTML, 'foo string', "first key value pair rendered");
-	QUnit.equal(lis[1].innerHTML, 'bar 1', "second key value pair rendered");
-	QUnit.equal(lis[2].innerHTML, 'baz false', "third key value pair rendered");
+	assert.equal(lis[0].innerHTML, 'foo string', "first key value pair rendered");
+	assert.equal(lis[1].innerHTML, 'bar 1', "second key value pair rendered");
+	assert.equal(lis[2].innerHTML, 'baz false', "third key value pair rendered");
 });
 
-QUnit.test('Live bound iteration of keys of a can.Map with #each and @key', function () {
+QUnit.test('Live bound iteration of keys of a can.Map with #each and @key', function(assert) {
 	delete can.Mustache._helpers.foo;
 	var template = can.view.mustache("<ul>{{#each map}}<li>{{@key}} {{.}}</li>{{/each}}</ul>");
 	var map = new can.Map({
@@ -3045,28 +3045,28 @@ QUnit.test('Live bound iteration of keys of a can.Map with #each and @key', func
 	})
 		.childNodes[0].getElementsByTagName('li');
 
-	QUnit.equal(lis.length, 3, "three lis");
+	assert.equal(lis.length, 3, "three lis");
 
-	QUnit.equal(lis[0].innerHTML, 'foo string', "first key value pair rendered");
-	QUnit.equal(lis[1].innerHTML, 'bar 1', "second key value pair rendered");
-	QUnit.equal(lis[2].innerHTML, 'baz false', "third key value pair rendered");
+	assert.equal(lis[0].innerHTML, 'foo string', "first key value pair rendered");
+	assert.equal(lis[1].innerHTML, 'bar 1', "second key value pair rendered");
+	assert.equal(lis[2].innerHTML, 'baz false', "third key value pair rendered");
 
 	map.attr('qux', true);
 
-	QUnit.equal(lis.length, 4, "four lis");
+	assert.equal(lis.length, 4, "four lis");
 
-	QUnit.equal(lis[3].innerHTML, 'qux true', "fourth key value pair rendered");
+	assert.equal(lis[3].innerHTML, 'qux true', "fourth key value pair rendered");
 
 	map.removeAttr('foo');
 
-	QUnit.equal(lis.length, 3, "three lis");
+	assert.equal(lis.length, 3, "three lis");
 
-	QUnit.equal(lis[0].innerHTML, 'bar 1', "new first key value pair rendered");
-	QUnit.equal(lis[1].innerHTML, 'baz false', "new second key value pair rendered");
-	QUnit.equal(lis[2].innerHTML, 'qux true', "new third key value pair rendered");
+	assert.equal(lis[0].innerHTML, 'bar 1', "new first key value pair rendered");
+	assert.equal(lis[1].innerHTML, 'baz false', "new second key value pair rendered");
+	assert.equal(lis[2].innerHTML, 'qux true', "new third key value pair rendered");
 });
 
-QUnit.test('Make sure data passed into template does not call helper by mistake', function () {
+QUnit.test('Make sure data passed into template does not call helper by mistake', function(assert) {
 	var template = can.view.mustache("<h1>{{text}}</h1>");
 	var data = {
 		text: 'with'
@@ -3075,10 +3075,10 @@ QUnit.test('Make sure data passed into template does not call helper by mistake'
 	var h1 = template(data)
 		.childNodes[0];
 
-	QUnit.equal(h1.innerHTML, "with");
+	assert.equal(h1.innerHTML, "with");
 });
 
-QUnit.test("no memory leaks with #each (#545)", function () {
+QUnit.test("no memory leaks with #each (#545)", function(assert) {
 	var tmp = can.view.mustache("<ul>{{#each children}}<li></li>{{/each}}</ul>");
 
 	var data = new can.Map({
@@ -3095,19 +3095,19 @@ QUnit.test("no memory leaks with #each (#545)", function () {
 	can.append(can.$('#qunit-fixture'), div);
 	can.append(can.$(div), tmp(data));
 
-	QUnit.stop();
+	var done = assert.async();
 	setTimeout(function () {
 
 		can.remove(can.$(div));
 
-		QUnit.equal(data._bindings, 0, "there are no bindings")
+		assert.equal(data._bindings, 0, "there are no bindings")
 
-		QUnit.start()
+		done()
 	}, 50)
 
 })
 
-QUnit.test("each directly within live html section", function () {
+QUnit.test("each directly within live html section", function(assert) {
 
 	var tmp = can.view.mustache(
 		"<ul>{{#if showing}}" +
@@ -3130,12 +3130,12 @@ QUnit.test("each directly within live html section", function () {
 
 	items.push("a")
 
-	QUnit.equal(frag.childNodes[0].getElementsByTagName("li")
+	assert.equal(frag.childNodes[0].getElementsByTagName("li")
 		.length, 3, "there are 3 elements");
 
 });
 
-QUnit.test("mustache loops with 0 (#568)", function () {
+QUnit.test("mustache loops with 0 (#568)", function(assert) {
 
 	var tmp = can.view.mustache("<ul>{{#array}}<li>{{.}}</li>{{/array}}");
 
@@ -3145,12 +3145,12 @@ QUnit.test("mustache loops with 0 (#568)", function () {
 
 	var frag = tmp(data)
 
-	QUnit.equal(frag.childNodes[0].getElementsByTagName("li")[0].innerHTML, "0")
-	QUnit.equal(frag.childNodes[0].getElementsByTagName("li")[1].innerHTML, "")
+	assert.equal(frag.childNodes[0].getElementsByTagName("li")[0].innerHTML, "0")
+	assert.equal(frag.childNodes[0].getElementsByTagName("li")[1].innerHTML, "")
 
 })
 
-QUnit.test('@index is correctly calculated when there are identical elements in the array', function () {
+QUnit.test('@index is correctly calculated when there are identical elements in the array', function(assert) {
 	var data = new can.List(['foo', 'bar', 'baz', 'qux', 'foo']);
 	var tmp = can.view.mustache('{{#each data}}{{@index}} {{/each}}');
 
@@ -3161,10 +3161,10 @@ QUnit.test('@index is correctly calculated when there are identical elements in 
 		data: data
 	}));
 
-	QUnit.equal(div.innerHTML, '0 1 2 3 4 ');
+	assert.equal(div.innerHTML, '0 1 2 3 4 ');
 })
 
-QUnit.test("if helper within className (#592)", function () {
+QUnit.test("if helper within className (#592)", function(assert) {
 
 	var tmp = can.view.mustache('<div class="fails {{#state}}animate-{{.}}{{/state}}"></div>');
 	var data = new can.Map({
@@ -3172,7 +3172,7 @@ QUnit.test("if helper within className (#592)", function () {
 	})
 	var frag = tmp(data);
 
-	QUnit.equal(frag.childNodes[0].className, "fails animate-ready")
+	assert.equal(frag.childNodes[0].className, "fails animate-ready")
 
 	tmp = can.view.mustache('<div class="fails {{#if state}}animate-{{state}}{{/if}}"></div>');
 	data = new can.Map({
@@ -3180,10 +3180,10 @@ QUnit.test("if helper within className (#592)", function () {
 	})
 	tmp(data);
 
-	QUnit.equal(frag.childNodes[0].className, "fails animate-ready")
+	assert.equal(frag.childNodes[0].className, "fails animate-ready")
 })
 
-QUnit.test('html comments must not break mustache scanner', function () {
+QUnit.test('html comments must not break mustache scanner', function(assert) {
 	can.each([
 		'text<!-- comment -->',
 		'text<!-- comment-->',
@@ -3194,11 +3194,11 @@ QUnit.test('html comments must not break mustache scanner', function () {
 
 		can.append(can.$('#qunit-fixture'), div);
 		can.append(can.$(div), can.view.mustache(content)());
-		QUnit.equal(div.innerHTML, content, 'Content did not change: "' + content + '"');
+		assert.equal(div.innerHTML, content, 'Content did not change: "' + content + '"');
 	});
 });
 
-QUnit.test("Rendering live bound indicies with #each, @index and a simple can.List when remove first item (#613)", function () {
+QUnit.test("Rendering live bound indicies with #each, @index and a simple can.List when remove first item (#613)", function(assert) {
 	var list = new can.List(['a', 'b', 'c']);
 	var template = can.view.mustache("<ul>{{#each list}}<li>{{@index}} {{.}}</li>{{/each}}</ul>");
 
@@ -3209,13 +3209,13 @@ QUnit.test("Rendering live bound indicies with #each, @index and a simple can.Li
 
 	// remove first item
 	list.shift();
-	QUnit.equal(lis.length, 2, "two lis");
+	assert.equal(lis.length, 2, "two lis");
 
-	QUnit.equal(lis[0].innerHTML, '0 b', "second item now the 1st item");
-	QUnit.equal(lis[1].innerHTML, '1 c', "third item now the 2nd item");
+	assert.equal(lis[0].innerHTML, '0 b', "second item now the 1st item");
+	assert.equal(lis[1].innerHTML, '1 c', "third item now the 2nd item");
 });
 
-QUnit.test("can.Mustache.safestring works on live binding (#606)", function () {
+QUnit.test("can.Mustache.safestring works on live binding (#606)", function(assert) {
 
 	var num = can.compute(1)
 
@@ -3230,11 +3230,11 @@ QUnit.test("can.Mustache.safestring works on live binding (#606)", function () {
 	var template = can.view.mustache("<div>{{safeHelper}}</div>")
 
 	var frag = template();
-	QUnit.equal(frag.childNodes[0].childNodes[0].nodeName.toLowerCase(), "p", "got a p element");
+	assert.equal(frag.childNodes[0].childNodes[0].nodeName.toLowerCase(), "p", "got a p element");
 
 });
 
-QUnit.test("directly nested subitems and each (#605)", function () {
+QUnit.test("directly nested subitems and each (#605)", function(assert) {
 
 	var template = can.view.mustache("<div>" +
 
@@ -3256,20 +3256,20 @@ QUnit.test("directly nested subitems and each (#605)", function () {
 		div = frag.childNodes[0],
 		labels = div.getElementsByTagName("label");
 
-	QUnit.equal(labels.length, 1, "initially one label");
+	assert.equal(labels.length, 1, "initially one label");
 
 	data.attr('item.subitems')
 		.push('second');
 
-	QUnit.equal(labels.length, 2, "after pushing two label");
+	assert.equal(labels.length, 2, "after pushing two label");
 
 	data.removeAttr('item');
 
-	QUnit.equal(labels.length, 0, "after removing item no label");
+	assert.equal(labels.length, 0, "after removing item no label");
 
 });
 
-QUnit.test("directly nested live sections unbind without needing the element to be removed", function () {
+QUnit.test("directly nested live sections unbind without needing the element to be removed", function(assert) {
 	var template = can.view.mustache(
 		"<div>" +
 		"{{#items}}" +
@@ -3288,10 +3288,10 @@ QUnit.test("directly nested live sections unbind without needing the element to 
 	function handler(eventType) {
 		can.Map.prototype.unbind.apply(this, arguments);
 		if (eventType === "visible") {
-			QUnit.ok(true, "unbound visible");
+			assert.ok(true, "unbound visible");
 			unbindCount++;
 			if(unbindCount >= 1) {
-				QUnit.start();
+				done();
 			}
 		}
 	}
@@ -3305,10 +3305,10 @@ QUnit.test("directly nested live sections unbind without needing the element to 
 		visible: true
 	}]);
 
-	QUnit.stop();
+	var done = assert.async();
 });
 
-QUnit.test("direct live section", function () {
+QUnit.test("direct live section", function(assert) {
 	var template = can.view.mustache("{{#if visible}}<label/>{{/if}}");
 
 	var data = new can.Map({
@@ -3318,16 +3318,16 @@ QUnit.test("direct live section", function () {
 	var div = document.createElement("div");
 	div.appendChild(template(data));
 
-	QUnit.equal(div.getElementsByTagName("label")
+	assert.equal(div.getElementsByTagName("label")
 		.length, 1, "there are 1 items")
 
 	data.attr("visible", false)
-	QUnit.equal(div.getElementsByTagName("label")
+	assert.equal(div.getElementsByTagName("label")
 		.length, 0, "there are 0 items")
 
 });
 
-QUnit.test('Rendering keys of an object with #each and @key in a Component', function () {
+QUnit.test('Rendering keys of an object with #each and @key in a Component', function(assert) {
 
 	var template = can.view.mustache("<ul>" +
 		"{{#each data}}" +
@@ -3346,30 +3346,30 @@ QUnit.test('Rendering keys of an object with #each and @key in a Component', fun
 	var frag = template(map);
 
 	var lis = frag.childNodes[0].getElementsByTagName("li");
-	QUnit.equal(lis.length, 3, "there are 3 properties of map's data property")
+	assert.equal(lis.length, 3, "there are 3 properties of map's data property")
 
-	QUnit.equal("some : test", lis[0].innerHTML)
+	assert.equal("some : test", lis[0].innerHTML)
 
 });
 
-QUnit.test("{{each}} does not error with undefined list (#602)", function () {
+QUnit.test("{{each}} does not error with undefined list (#602)", function(assert) {
 	var renderer = can.view.mustache('<div>{{#each data}}{{name}}{{/each}}</div>');
 
-	QUnit.equal(renderer.render({}), '<div></div>', 'Empty text rendered');
-	QUnit.equal(renderer.render({
+	assert.equal(renderer.render({}), '<div></div>', 'Empty text rendered');
+	assert.equal(renderer.render({
 		data: false
 	}), '<div></div>', 'Empty text rendered');
-	QUnit.equal(renderer.render({
+	assert.equal(renderer.render({
 		data: null
 	}), '<div></div>', 'Empty text rendered');
-	QUnit.equal(renderer.render({
+	assert.equal(renderer.render({
 		data: [{
 			name: 'David'
 		}]
 	}), '<div>David</div>', 'Expected name rendered');
 });
 
-QUnit.test('{{#each}} helper works reliably with nested sections (#604)', function () {
+QUnit.test('{{#each}} helper works reliably with nested sections (#604)', function(assert) {
 	var renderer = can.view.mustache('{{#if first}}<ul>{{#each list}}<li>{{name}}</li>{{/each}}</ul>' +
 		'{{else}}<ul>{{#each list2}}<li>{{name}}</li>{{/each}}</ul>{{/if}}');
 	var data = new can.Map({
@@ -3390,7 +3390,7 @@ QUnit.test('{{#each}} helper works reliably with nested sections (#604)', functi
 
 	div.appendChild(renderer(data));
 
-	QUnit.deepEqual(
+	assert.deepEqual(
 		can.map(lis, function (li) {
 			return li.innerHTML
 		}), ["Something", "Else"],
@@ -3398,7 +3398,7 @@ QUnit.test('{{#each}} helper works reliably with nested sections (#604)', functi
 
 	data.attr('first', false);
 
-	QUnit.deepEqual(
+	assert.deepEqual(
 		can.map(lis, function (li) {
 			return li.innerHTML
 		}), ["Foo", "Bar"],
@@ -3406,7 +3406,7 @@ QUnit.test('{{#each}} helper works reliably with nested sections (#604)', functi
 
 });
 
-QUnit.test("Block bodies are properly escaped inside attributes", function () {
+QUnit.test("Block bodies are properly escaped inside attributes", function(assert) {
 	var html = "<div title='{{#test}}{{.}}{{{.}}}{{/test}}'></div>",
 		div = document.createElement("div"),
 		title = "Alpha&Beta";
@@ -3415,10 +3415,10 @@ QUnit.test("Block bodies are properly escaped inside attributes", function () {
 		test: title
 	})));
 
-	QUnit.equal(div.getElementsByTagName("div")[0].title, title + title);
+	assert.equal(div.getElementsByTagName("div")[0].title, title + title);
 });
 
-QUnit.test('Constructor static properties are accessible (#634)', function () {
+QUnit.test('Constructor static properties are accessible (#634)', function(assert) {
 	can.Map.extend("can.Foo", {
 		static_prop: "baz"
 	}, {
@@ -3476,25 +3476,25 @@ QUnit.test('Constructor static properties are accessible (#634)', function () {
 		i = 0;
 
 	// Straight access
-	QUnit.equal(spans[i++].innerHTML, 'quux', 'Expected "quux"');
-	QUnit.equal(spans[i++].innerHTML, 'baz', 'Expected "baz"');
-	QUnit.equal(spans[i++].innerHTML, '', 'Expected ""');
-	QUnit.equal(spans[i++].innerHTML, 'thud', 'Expected "thud"');
+	assert.equal(spans[i++].innerHTML, 'quux', 'Expected "quux"');
+	assert.equal(spans[i++].innerHTML, 'baz', 'Expected "baz"');
+	assert.equal(spans[i++].innerHTML, '', 'Expected ""');
+	assert.equal(spans[i++].innerHTML, 'thud', 'Expected "thud"');
 
 	// Helper argument
-	QUnit.equal(spans[i++].innerHTML, 'quux', 'Expected "quux"');
-	QUnit.equal(spans[i++].innerHTML, 'baz', 'Expected "baz"');
-	QUnit.equal(spans[i++].innerHTML, '', 'Expected ""');
-	QUnit.equal(spans[i++].innerHTML, 'thud', 'Expected "thud"');
+	assert.equal(spans[i++].innerHTML, 'quux', 'Expected "quux"');
+	assert.equal(spans[i++].innerHTML, 'baz', 'Expected "baz"');
+	assert.equal(spans[i++].innerHTML, '', 'Expected ""');
+	assert.equal(spans[i++].innerHTML, 'thud', 'Expected "thud"');
 
 	// Helper hash argument
-	QUnit.equal(spans[i++].innerHTML, 'prop=quux', 'Expected "prop=quux"');
-	QUnit.equal(spans[i++].innerHTML, 'prop=baz', 'Expected "prop=baz"');
-	QUnit.equal(spans[i++].innerHTML, 'prop=', 'Expected "prop="');
-	QUnit.equal(spans[i++].innerHTML, 'prop=thud', 'Expected "prop=thud"');
+	assert.equal(spans[i++].innerHTML, 'prop=quux', 'Expected "prop=quux"');
+	assert.equal(spans[i++].innerHTML, 'prop=baz', 'Expected "prop=baz"');
+	assert.equal(spans[i++].innerHTML, 'prop=', 'Expected "prop="');
+	assert.equal(spans[i++].innerHTML, 'prop=thud', 'Expected "prop=thud"');
 });
 
-QUnit.test("{{#each}} handles an undefined list changing to a defined list (#629)", function () {
+QUnit.test("{{#each}} handles an undefined list changing to a defined list (#629)", function(assert) {
 	var renderer = can.view.mustache('    {{description}}: \
 <ul> \
 {{#each list}} \
@@ -3514,30 +3514,30 @@ QUnit.test("{{#each}} handles an undefined list changing to a defined list (#629
 	div.appendChild(renderer(data1));
 	div.appendChild(renderer(data2));
 
-	QUnit.equal(div.getElementsByTagName('ul')[0].getElementsByTagName('li')
+	assert.equal(div.getElementsByTagName('ul')[0].getElementsByTagName('li')
 		.length, 0);
-	QUnit.equal(div.getElementsByTagName('ul')[1].getElementsByTagName('li')
+	assert.equal(div.getElementsByTagName('ul')[1].getElementsByTagName('li')
 		.length, 0);
 
-	QUnit.stop();
+	var done = assert.async();
 	setTimeout(function () {
-		QUnit.start();
+		done();
 		data1.attr('list', [{
 			name: 'first'
 		}]);
 		data2.attr('list', [{
 			name: 'first'
 		}]);
-		QUnit.equal(div.getElementsByTagName('ul')[0].getElementsByTagName('li')
+		assert.equal(div.getElementsByTagName('ul')[0].getElementsByTagName('li')
 			.length, 1);
-		QUnit.equal(div.getElementsByTagName('ul')[1].getElementsByTagName('li')
+		assert.equal(div.getElementsByTagName('ul')[1].getElementsByTagName('li')
 			.length, 1);
-		QUnit.equal(div.getElementsByTagName('ul')[0].getElementsByTagName('li')[0].innerHTML, 'first');
-		QUnit.equal(div.getElementsByTagName('ul')[1].getElementsByTagName('li')[0].innerHTML, 'first');
+		assert.equal(div.getElementsByTagName('ul')[0].getElementsByTagName('li')[0].innerHTML, 'first');
+		assert.equal(div.getElementsByTagName('ul')[1].getElementsByTagName('li')[0].innerHTML, 'first');
 	}, 250);
 });
 
-QUnit.test('can.compute should live bind when the value is changed to a Construct (#638)', function () {
+QUnit.test('can.compute should live bind when the value is changed to a Construct (#638)', function(assert) {
 	var renderer = can.view.mustache('<p>{{#counter}} Clicked <span>{{count}}</span> times {{/counter}}</p>'),
 		div = document.createElement('div'),
 		// can.compute(null) will pass
@@ -3548,21 +3548,21 @@ QUnit.test('can.compute should live bind when the value is changed to a Construc
 
 	div.appendChild(renderer(data));
 
-	QUnit.equal(div.getElementsByTagName('span')
+	assert.equal(div.getElementsByTagName('span')
 		.length, 0);
-	QUnit.stop();
+	var done = assert.async();
 	setTimeout(function () {
-		QUnit.start();
+		done();
 		counter({
 			count: 1
 		});
-		QUnit.equal(div.getElementsByTagName('span')
+		assert.equal(div.getElementsByTagName('span')
 			.length, 1);
-		QUnit.equal(div.getElementsByTagName('span')[0].innerHTML, '1');
+		assert.equal(div.getElementsByTagName('span')[0].innerHTML, '1');
 	}, 10);
 });
 
-QUnit.test("@index in partials loaded from script templates", function () {
+QUnit.test("@index in partials loaded from script templates", function(assert) {
 
 	// add template as script
 
@@ -3590,16 +3590,16 @@ QUnit.test("@index in partials loaded from script templates", function () {
 		div = frag.childNodes[0],
 		labels = div.getElementsByTagName("label");
 
-	QUnit.equal(labels.length, 2, "two labels")
+	assert.equal(labels.length, 2, "two labels")
 
 	items.shift();
 
-	QUnit.equal(labels.length, 1, "first label removed")
+	assert.equal(labels.length, 1, "first label removed")
 })
 
 //!steal-remove-start
 if (can.dev) {
-	QUnit.test("Logging: Custom tag does not have a registered handler", function () {
+	QUnit.test("Logging: Custom tag does not have a registered handler", function(assert) {
 		if (window.html5) {
 			window.html5.elements += ' my-custom';
 			window.html5.shivDocument();
@@ -3607,7 +3607,7 @@ if (can.dev) {
 		
 		var oldlog = can.dev.warn;
 		can.dev.warn = function (text) {
-			QUnit.equal(text, 'can/view/scanner.js: No custom element found for my-custom',
+			assert.equal(text, 'can/view/scanner.js: No custom element found for my-custom',
 				'Got expected message logged.')
 		}
 
@@ -3616,12 +3616,12 @@ if (can.dev) {
 		can.dev.warn = oldlog;
 	});
 
-	QUnit.test("Logging: Helper not found in mustache template(#726)", function () {
+	QUnit.test("Logging: Helper not found in mustache template(#726)", function(assert) {
 		var oldlog = can.dev.warn,
 				message = 'can-mustache.js: Unable to find helper "helpme".';
 
 		can.dev.warn = function (text) {
-			QUnit.equal(text, message, 'Got expected message logged.');
+			assert.equal(text, message, 'Got expected message logged.');
 		}
 
 		can.view.mustache('<li>{{helpme name}}</li>')({
@@ -3631,12 +3631,12 @@ if (can.dev) {
 		can.dev.warn = oldlog;
 	});
 
-	QUnit.test("Logging: Variable not found in mustache template (#720)", function () {
+	QUnit.test("Logging: Variable not found in mustache template (#720)", function(assert) {
 		var oldlog = can.dev.warn,
 				message = 'can-mustache.js: Unable to find key "user.name".';
 
 		can.dev.warn = function (text) {
-			QUnit.equal(text, message, 'Got expected message logged.');
+			assert.equal(text, message, 'Got expected message logged.');
 		}
 
 		can.view.mustache('<li>{{user.name}}</li>')({
@@ -3646,11 +3646,11 @@ if (can.dev) {
 		can.dev.warn = oldlog;
 	});
 
-	QUnit.test("Logging: Don't show a warning on helpers (#1257)", 1, function () {
+	QUnit.test("Logging: Don't show a warning on helpers (#1257)", 1, function(assert) {
 		var oldlog = can.dev.warn;
 
 		can.dev.warn = function (/*text*/) {
-			QUnit.ok(false, 'Log warning not called for helper');
+			assert.ok(false, 'Log warning not called for helper');
 		}
 
 		can.mustache.registerHelper('myHelper', function() {
@@ -3658,14 +3658,14 @@ if (can.dev) {
 		});
 
 		var frag = can.view.mustache('<li>{{myHelper}}</li>')({});
-		QUnit.equal(frag.textContent, 'Hi!');
+		assert.equal(frag.textContent, 'Hi!');
 
 		can.dev.warn = oldlog;
 	});
 }
 //!steal-remove-end
 
-QUnit.test('Computes returning null values work with #each (#743)', function () {
+QUnit.test('Computes returning null values work with #each (#743)', function(assert) {
 	var people = new can.List(["Curtis","Stan", "David"]);
 	var map = new can.Map({ showPeople: false });
 	var list = can.compute(function(){
@@ -3685,15 +3685,15 @@ QUnit.test('Computes returning null values work with #each (#743)', function () 
 	});
 	var ul = frag.childNodes[0];
 
-	QUnit.equal(ul.innerHTML, '', 'list is empty');
+	assert.equal(ul.innerHTML, '', 'list is empty');
 	map.attr('showPeople', true);
-	QUnit.equal(ul.childNodes.length, 3, 'List got updated');
-	QUnit.equal(ul.getElementsByTagName('li')[0].innerHTML, 'Curtis', 'List got updated');
-	QUnit.equal(ul.getElementsByTagName('li')[1].innerHTML, 'Stan', 'List got updated');
-	QUnit.equal(ul.getElementsByTagName('li')[2].innerHTML, 'David', 'List got updated');
+	assert.equal(ul.childNodes.length, 3, 'List got updated');
+	assert.equal(ul.getElementsByTagName('li')[0].innerHTML, 'Curtis', 'List got updated');
+	assert.equal(ul.getElementsByTagName('li')[1].innerHTML, 'Stan', 'List got updated');
+	assert.equal(ul.getElementsByTagName('li')[2].innerHTML, 'David', 'List got updated');
 });
 
-QUnit.test('each with child objects (#750)', function() {
+QUnit.test('each with child objects (#750)', function(assert) {
 	var list = new can.List([{
 		i: 0
 	}, {
@@ -3711,13 +3711,13 @@ QUnit.test('each with child objects (#750)', function() {
 	var div = document.createElement('div');
 	div.appendChild(frag);
 
-	QUnit.equal(div.innerHTML, '012');
+	assert.equal(div.innerHTML, '012');
 
 	list.pop();
-	QUnit.equal(div.innerHTML, '01');
+	assert.equal(div.innerHTML, '01');
 });
 
-QUnit.test('Mustache helper: if w/ each removing all content', function () {
+QUnit.test('Mustache helper: if w/ each removing all content', function(assert) {
 	var expected = '123content',
 	container = new can.Map({
 		items: [1,2,3]
@@ -3729,13 +3729,13 @@ QUnit.test('Mustache helper: if w/ each removing all content', function () {
 	var div = document.createElement('div');
 	div.appendChild(frag);
 
-	QUnit.equal(div.innerHTML, expected);
+	assert.equal(div.innerHTML, expected);
 
 	container.attr('items').replace([]);
-	QUnit.equal(div.innerHTML, '');
+	assert.equal(div.innerHTML, '');
 });
 
-QUnit.test("Inverse ^if should work with an else clause (#751)", function() {
+QUnit.test("Inverse ^if should work with an else clause (#751)", function(assert) {
 	var tmpl = "{{^if show}}" +
 		"<div>Not showing</div>" +
 		"{{else}}" +
@@ -3747,14 +3747,14 @@ QUnit.test("Inverse ^if should work with an else clause (#751)", function() {
 
 	// Should not be showing at first.
 	var node = frag.childNodes[0];
-	QUnit.equal(node.innerHTML, "Not showing", "Inverse resolved to true");
+	assert.equal(node.innerHTML, "Not showing", "Inverse resolved to true");
 
 	// Switch show to true and should show {{else}} section
 	data.attr("show", true);
-	QUnit.equal(frag.childNodes[0].innerHTML, "Is showing", "Not showing the else");
+	assert.equal(frag.childNodes[0].innerHTML, "Is showing", "Not showing the else");
 });
 
-QUnit.test("Expandos (#744)", function(){
+QUnit.test("Expandos (#744)", function(assert) {
 	var template =  can.mustache("{{#each items}}<div>{{name}}</div>{{/each}}"+
 		"{{#if items.spliced}}<strong>List was spliced</strong>{{/if}}");
 	var items = new can.List([
@@ -3767,11 +3767,11 @@ QUnit.test("Expandos (#744)", function(){
 	//items.splice(0,2);
 	items.attr('spliced', true);
 	// 2 because {{#each}} keeps a textnode placeholder
-	QUnit.equal(frag.childNodes[2].nodeName.toLowerCase(),"strong", "worked");
+	assert.equal(frag.childNodes[2].nodeName.toLowerCase(),"strong", "worked");
 });
 
 
-QUnit.test("Calling .fn without arguments should forward scope by default (#658)", function(){
+QUnit.test("Calling .fn without arguments should forward scope by default (#658)", function(assert) {
 	var tmpl = "{{#foo}}<span>{{bar}}</span>{{/foo}}";
 	var frag = can.mustache(tmpl)(new can.Map({
 		bar : 'baz'
@@ -3782,10 +3782,10 @@ QUnit.test("Calling .fn without arguments should forward scope by default (#658)
 	});
 	var node = frag.childNodes[0];
 
-	QUnit.equal(node.innerHTML, 'baz', 'Context is forwarded correctly');
+	assert.equal(node.innerHTML, 'baz', 'Context is forwarded correctly');
 });
 
-QUnit.test("Calling .fn with falsy value as the context will render correctly (#658)", function(){
+QUnit.test("Calling .fn with falsy value as the context will render correctly (#658)", function(assert) {
 	var tmpl = "{{#zero}}<span>{{ . }}</span>{{/zero}}{{#emptyString}}<span>{{ . }}</span>{{/emptyString}}{{#nullVal}}<span>{{ . }}</span>{{/nullVal}}";
 
 	var frag = can.mustache(tmpl)({ foo: 'bar' }, {
@@ -3800,12 +3800,12 @@ QUnit.test("Calling .fn with falsy value as the context will render correctly (#
 		}
 	});
 
-	QUnit.equal(frag.childNodes[0].innerHTML, '0', 'Context is set correctly for falsy values');
-	QUnit.equal(frag.childNodes[1].innerHTML, '', 'Context is set correctly for falsy values');
-	QUnit.equal(frag.childNodes[2].innerHTML, '', 'Context is set correctly for falsy values');
+	assert.equal(frag.childNodes[0].innerHTML, '0', 'Context is set correctly for falsy values');
+	assert.equal(frag.childNodes[1].innerHTML, '', 'Context is set correctly for falsy values');
+	assert.equal(frag.childNodes[2].innerHTML, '', 'Context is set correctly for falsy values');
 })
 
-QUnit.test("can.Construct derived classes should be considered objects, not functions (#450)", 8, function() {
+QUnit.test("can.Construct derived classes should be considered objects, not functions (#450)", 8, function(assert) {
 	
 	can.Mustache.registerHelper("cat", function(options) {
 		var clazz = options.hash ? options.hash.clazz : options;
@@ -3848,19 +3848,19 @@ QUnit.test("can.Construct derived classes should be considered objects, not func
 
 	description = " (constructor by itself)";
 	
-	QUnit.equal(content[0].innerHTML, "bar", "fully dotted" + description);
-	QUnit.equal(content[1].innerHTML.replace(/<\/?span>/ig,''), "", "with attribute nested" + description);
-	QUnit.equal(content[2].innerHTML, "bar", "passed as an argument to helper" + description);
-	QUnit.equal(content[3].innerHTML, "bar", "passed as a hash to helper" + description);
+	assert.equal(content[0].innerHTML, "bar", "fully dotted" + description);
+	assert.equal(content[1].innerHTML.replace(/<\/?span>/ig,''), "", "with attribute nested" + description);
+	assert.equal(content[2].innerHTML, "bar", "passed as an argument to helper" + description);
+	assert.equal(content[3].innerHTML, "bar", "passed as a hash to helper" + description);
 
 	description = " (constructor as function returning itself)";
-	QUnit.equal(content[4].innerHTML, "bar", "fully dotted" + description);
-	QUnit.equal(content[5].innerHTML.replace(/<\/?span>/ig,''), "", "with attribute nested" + description);
-	QUnit.equal(content[6].innerHTML, "bar", "passed as an argument to helper" + description);
-	QUnit.equal(content[7].innerHTML, "bar", "passed as a hash to helper" + description);
+	assert.equal(content[4].innerHTML, "bar", "fully dotted" + description);
+	assert.equal(content[5].innerHTML.replace(/<\/?span>/ig,''), "", "with attribute nested" + description);
+	assert.equal(content[6].innerHTML, "bar", "passed as an argument to helper" + description);
+	assert.equal(content[7].innerHTML, "bar", "passed as a hash to helper" + description);
 });
 
-QUnit.test("Partials are passed helpers (#791)", function () {
+QUnit.test("Partials are passed helpers (#791)", function(assert) {
 	var t = {
 		template: "{{>partial}}",
 		expected: "foo",
@@ -3877,17 +3877,17 @@ QUnit.test("Partials are passed helpers (#791)", function () {
 		can.view.registerView(name, t.partials[name], ".mustache")
 	}
 
-	QUnit.deepEqual(new can.Mustache({
+	assert.deepEqual(new can.Mustache({
 			text: t.template
 		})
 		.render({}, t.helpers), t.expected);
 });
 
-QUnit.test("{{else}} with {{#unless}} (#988)", function(){
+QUnit.test("{{else}} with {{#unless}} (#988)", function(assert) {
 	var tmpl = "<div>{{#unless noData}}data{{else}}no data{{/unless}}</div>";
 
 	var frag = can.mustache(tmpl)({ noData: true });
-	QUnit.equal(frag.childNodes[0].innerHTML, 'no data', 'else with unless worked');
+	assert.equal(frag.childNodes[0].innerHTML, 'no data', 'else with unless worked');
 });
 
 // It seems like non-jQuery libraries do not recognize <col> elements in fragments which is what we
@@ -3895,7 +3895,7 @@ QUnit.test("{{else}} with {{#unless}} (#988)", function(){
 // of creating a string from a document fragment.
 try {
 	if(can.$('<col>').length) {
-		QUnit.test("<col> inside <table> renders correctly (#1013)", 1, function () {
+		QUnit.test("<col> inside <table> renders correctly (#1013)", 1, function(assert) {
 			var template = '<table><colgroup>{{#columns}}<col class="{{class}}" />{{/columns}}</colgroup><tbody></tbody></table>';
 			var frag = can.mustache(template)({
 				columns: new can.List([
@@ -3904,28 +3904,28 @@ try {
 			});
 
 			var child = frag.childNodes[1] || frag.childNodes[0];
-			QUnit.ok(child.innerHTML.indexOf('<colgroup><col class="test"') === 0, '<col> nodes added in proper position');
+			assert.ok(child.innerHTML.indexOf('<colgroup><col class="test"') === 0, '<col> nodes added in proper position');
 		});
 	}
 } catch(e) {
 	// DOJO throws an error
 }
 
-QUnit.test('getHelper returns null when no helper found', function() {
-	QUnit.ok( !Mustache.getHelper('__dummyHelper') );
+QUnit.test('getHelper returns null when no helper found', function(assert) {
+	assert.ok( !Mustache.getHelper('__dummyHelper') );
 });
 
-QUnit.test("getHelper 'options' parameter should be optional", function(){
+QUnit.test("getHelper 'options' parameter should be optional", function(assert) {
 	Mustache.registerHelper('myHelper', function() {
 		return true;
 	});
 
-	QUnit.ok( Mustache.getHelper('myHelper').name === 'myHelper' );
-	QUnit.ok( typeof Mustache.getHelper('myHelper').fn === 'function' );
-	QUnit.ok( Mustache.getHelper('myHelper').fn() );
+	assert.ok( Mustache.getHelper('myHelper').name === 'myHelper' );
+	assert.ok( typeof Mustache.getHelper('myHelper').fn === 'function' );
+	assert.ok( Mustache.getHelper('myHelper').fn() );
 });
 
-QUnit.test("Passing Partial set in options (#1388 and #1389).", function () {
+QUnit.test("Passing Partial set in options (#1388 and #1389).", function(assert) {
 	var data = new can.Map({
 		name: "World",
 		greeting: "hello"
@@ -3937,13 +3937,13 @@ QUnit.test("Passing Partial set in options (#1388 and #1389).", function () {
 
 	var div = document.createElement("div");
 	div.appendChild(template);
-	QUnit.equal(div.childNodes[0].innerHTML, "hello World", "partial retreived and rendered");
+	assert.equal(div.childNodes[0].innerHTML, "hello World", "partial retreived and rendered");
 
 });
 
 
 if(Object.keys) {
-	QUnit.test('Mustache memory leak (#1393)', function() {
+	QUnit.test('Mustache memory leak (#1393)', function(assert) {
 		for(var prop in can.view.nodeLists.nodeMap) {
 			delete can.view.nodeLists.nodeMap[prop];
 		}
@@ -3958,16 +3958,16 @@ if(Object.keys) {
 
 		can.append(can.$('#qunit-fixture'), frag);
 
-		QUnit.equal(Object.keys(can.view.nodeLists.nodeMap).length, 3, 'Three items added');
+		assert.equal(Object.keys(can.view.nodeLists.nodeMap).length, 3, 'Three items added');
 		can.remove(can.$('#qunit-fixture > *'));
-		QUnit.equal(Object.keys(can.view.nodeLists.nodeMap).length, 0, 'All nodes have been removed from nodeMap');
+		assert.equal(Object.keys(can.view.nodeLists.nodeMap).length, 0, 'All nodes have been removed from nodeMap');
 	});
 }
 
-QUnit.test('registerSimpleHelper', 3, function() {
+QUnit.test('registerSimpleHelper', 3, function(assert) {
 	can.Mustache.registerSimpleHelper('simple', function(first, second) {
-		QUnit.equal(first, 2);
-		QUnit.equal(second, 4);
+		assert.equal(first, 2);
+		assert.equal(second, 4);
 		return first + second;
 	});
 
@@ -3976,10 +3976,10 @@ QUnit.test('registerSimpleHelper', 3, function() {
 		first: 2,
 		second: 4
 	}));
-	QUnit.equal(frag.childNodes[0].innerHTML, 'Result: 6');
+	assert.equal(frag.childNodes[0].innerHTML, 'Result: 6');
 });
 
-QUnit.test('Helper handles list replacement (#1652)', 3, function () {
+QUnit.test('Helper handles list replacement (#1652)', 3, function(assert) {
 
 	var state = new can.Map({
 		list: []
@@ -3987,7 +3987,7 @@ QUnit.test('Helper handles list replacement (#1652)', 3, function () {
 
 	var helpers = {
 		listHasLength: function (options) {
-			QUnit.ok(true, 'listHasLength helper evaluated');
+			assert.ok(true, 'listHasLength helper evaluated');
 			return this.attr('list').attr('length') ?
 				options.fn() :
 				options.inverse();
@@ -4005,7 +4005,7 @@ QUnit.test('Helper handles list replacement (#1652)', 3, function () {
 
 });
 
-QUnit.test('Helper binds to nested properties (#1651)', function () {
+QUnit.test('Helper binds to nested properties (#1651)', function(assert) {
 
 	var nestedAttrsCount = 0,
 		state = new can.Map({
@@ -4018,7 +4018,7 @@ QUnit.test('Helper binds to nested properties (#1651)', function () {
 			nestedAttrsCount++;
 
 			if (nestedAttrsCount === 3) {
-				QUnit.ok(true, 'bindViaNestedAttrs helper evaluated 3 times');
+				assert.ok(true, 'bindViaNestedAttrs helper evaluated 3 times');
 			}
 
 			return this.attr('parent') && this.attr('parent').attr('child') ?
@@ -4039,10 +4039,10 @@ QUnit.test('Helper binds to nested properties (#1651)', function () {
 	state.attr('parent.child', 'bar');
 });
 
-QUnit.test('registerSimpleHelper', 3, function() {
+QUnit.test('registerSimpleHelper', 3, function(assert) {
 	can.Mustache.registerSimpleHelper('simple', function(first, second) {
-		QUnit.equal(first, 2);
-		QUnit.equal(second, 4);
+		assert.equal(first, 2);
+		assert.equal(second, 4);
 		return first + second;
 	});
 
@@ -4051,13 +4051,13 @@ QUnit.test('registerSimpleHelper', 3, function() {
 		first: 2,
 		second: 4
 	}));
-	QUnit.equal(frag.childNodes[0].innerHTML, 'Result: 6');
+	assert.equal(frag.childNodes[0].innerHTML, 'Result: 6');
 });
 
-QUnit.test('registerSimpleHelper', 3, function() {
+QUnit.test('registerSimpleHelper', 3, function(assert) {
 	can.Mustache.registerSimpleHelper('simple', function(first, second) {
-		QUnit.equal(first, 2);
-		QUnit.equal(second, 4);
+		assert.equal(first, 2);
+		assert.equal(second, 4);
 		return first + second;
 	});
 
@@ -4066,7 +4066,7 @@ QUnit.test('registerSimpleHelper', 3, function() {
 		first: 2,
 		second: 4
 	}));
-	QUnit.equal(frag.childNodes[0].innerHTML, 'Result: 6');
+	assert.equal(frag.childNodes[0].innerHTML, 'Result: 6');
 });
 
 module.exports = QUnit;
