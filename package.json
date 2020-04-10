@@ -50,7 +50,7 @@
   "dependencies": {
     "can": "canjs/canjs#major",
     "can-legacy-view-helpers": "^0.4.4",
-    "jquery": "~3.2.1"
+    "jquery": "~3.5.0"
   },
   "devDependencies": {
     "benchmark": "^2.1.0",
